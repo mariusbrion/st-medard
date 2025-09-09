@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Carte Leaflet Test</title>
+  <title>Carte Leaflet Test avec CSV</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Feuilles de style Leaflet -->
@@ -18,40 +18,114 @@
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
+    #csv-table {
+      margin-top: 20px;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    #csv-table th, #csv-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    #csv-table tr.highlight {
+      background-color: yellow;
+    }
+    #preview {
+      position: absolute;
+      background: white;
+      padding: 5px;
+      border: 1px solid gray;
+      border-radius: 4px;
+      display: none;
+      pointer-events: none;
+    }
+    #preview img {
+      width: 120px;
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
-  <h2>Test Leaflet avec GeoJSON et Image</h2>
+  <h2>Carte interactive Leaflet + CSV</h2>
   <div id="map"></div>
 
-  <!-- Scripts Leaflet -->
+  <!-- Aperçu photo sur survol -->
+  <div id="preview"><img src="20250904_153527.jpg"></div>
+
+  <!-- Tableau CSV -->
+  <h3>Données CSV liées</h3>
+  <table id="csv-table"></table>
+
+  <!-- Scripts -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/papaparse@5.3.2/papaparse.min.js"></script>
 
   <script>
     // Initialisation de la carte
-    var map = L.map('map').setView([46.8, 0.5], 9); // centre approximatif (à ajuster)
+    var map = L.map('map').setView([46.8, 0.5], 9);
 
-    // Fond de carte OSM
+    // Fond de carte
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // Chargement du GeoJSON
-    fetch("test json 2.geojson")
-      .then(response => response.json())
+    // Charger et afficher le CSV dans un tableau
+    let csvData = [];
+    Papa.parse("test stmedard.csv", {
+      download: true,
+      header: true,
+      complete: function(results) {
+        csvData = results.data;
+        renderTable(csvData);
+      }
+    });
+
+    function renderTable(data) {
+      const table = document.getElementById("csv-table");
+      if (data.length === 0) return;
+
+      // En-têtes
+      const headers = Object.keys(data[0]);
+      let thead = "<tr>" + headers.map(h => `<th>${h}</th>`).join("") + "</tr>";
+      let rows = data.map(row => {
+        return "<tr data-id='"+row.id+"'>" +
+               headers.map(h => `<td>${row[h]}</td>`).join("") +
+               "</tr>";
+      }).join("");
+      table.innerHTML = thead + rows;
+    }
+
+    // Aperçu photo
+    const preview = document.getElementById("preview");
+
+    function showPreview(e) {
+      preview.style.display = "block";
+      preview.style.left = (e.originalEvent.pageX + 10) + "px";
+      preview.style.top = (e.originalEvent.pageY + 10) + "px";
+    }
+    function hidePreview() {
+      preview.style.display = "none";
+    }
+
+    // Charger le GeoJSON
+    fetch("test json.geojson")
+      .then(r => r.json())
       .then(data => {
         L.geoJSON(data, {
           onEachFeature: function (feature, layer) {
-            // Popup avec image
-            layer.bindPopup(`
-              <b>${feature.properties.nom || "Sans nom"}</b><br>
-              <img src="20250904_153527.jpg" class="popup-img">
-            `);
-          },
-          style: {
-            color: "blue",
-            weight: 2,
-            fillOpacity: 0.4
+            // Survol → aperçu photo
+            layer.on("mouseover", showPreview);
+            layer.on("mouseout", hidePreview);
+
+            // Clic → mettre en surbrillance la ligne correspondante
+            layer.on("click", function() {
+              let fid = feature.properties.id;
+              let rows = document.querySelectorAll("#csv-table tr");
+              rows.forEach(r => r.classList.remove("highlight"));
+              let target = document.querySelector(`#csv-table tr[data-id='${fid}']`);
+              if (target) target.classList.add("highlight");
+              target.scrollIntoView({ behavior: "smooth", block: "center" });
+            });
           },
           pointToLayer: function (feature, latlng) {
             return L.circleMarker(latlng, {
@@ -68,4 +142,3 @@
   </script>
 </body>
 </html>
-
