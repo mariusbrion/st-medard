@@ -1,424 +1,251 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <title>Carte Leaflet Interactive</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Feuilles de style Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <!-- PapaParse pour parser le CSV -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-    }
-    
-    h2 {
-      text-align: center;
-      color: #333;
-      margin: 20px 0;
-    }
-    
-    #map {
-      width: 100%;
-      height: 600px;
-      margin-bottom: 30px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    
-    /* Styles pour les popups */
-    .popup-img {
-      width: 250px;
-      max-width: 100%;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      margin-top: 10px;
-    }
-    
-    .popup-content {
-      max-width: 280px;
-    }
-    
-    .popup-title {
-      font-weight: bold;
-      font-size: 16px;
-      color: #333;
-      margin-bottom: 8px;
-    }
-    
-    /* Styles pour les tooltips */
-    .custom-tooltip {
-      background: rgba(0,0,0,0.8);
-      color: white;
-      padding: 8px 12px;
-      border-radius: 4px;
-      font-size: 12px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    
-    .tooltip-img {
-      width: 150px;
-      border-radius: 4px;
-      margin-top: 5px;
-    }
-    
-    /* Styles pour le tableau CSV */
-    #csv-container {
-      margin: 20px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
-    
-    #csv-title {
-      background: #4CAF50;
-      color: white;
-      padding: 15px 20px;
-      margin: 0;
-      font-size: 18px;
-    }
-    
-    #csv-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 0;
-    }
-    
-    #csv-table th {
-      background: #f8f9fa;
-      padding: 12px 15px;
-      text-align: left;
-      border-bottom: 2px solid #dee2e6;
-      font-weight: bold;
-      color: #333;
-    }
-    
-    #csv-table td {
-      padding: 12px 15px;
-      border-bottom: 1px solid #dee2e6;
-      transition: background-color 0.3s ease;
-    }
-    
-    #csv-table tr:nth-child(even) {
-      background-color: #f8f9fa;
-    }
-    
-    #csv-table tr:hover {
-      background-color: #e3f2fd;
-    }
-    
-    /* Ligne mise en surbrillance */
-    #csv-table tr.highlighted {
-      background-color: #ffeb3b !important;
-      animation: highlight 2s ease-in-out;
-    }
-    
-    @keyframes highlight {
-      0% { background-color: #ff9800; }
-      100% { background-color: #ffeb3b; }
-    }
-    
-    /* Loading spinner */
-    .loading {
-      text-align: center;
-      padding: 20px;
-      color: #666;
-    }
-    
-    /* Responsive design */
-    @media (max-width: 768px) {
-      #map {
-        height: 400px;
-      }
-      
-      #csv-container {
-        margin: 10px;
-      }
-      
-      #csv-table {
-        font-size: 14px;
-      }
-      
-      .popup-img {
-        width: 200px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte Interactive Avancée</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.4.1/papaparse.min.js" integrity="sha512-dfbpZfcQtUPvHTkrajAF953GgvmgJdQbbzFKB6MqlCdbDJAxBNseM1CN5mfqN0g1zCmE5wFkAu3J2H/K1EzhUw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <style>
+        /* --- Style général et responsive --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden; /* Empêche le défilement de la page entière */
+        }
+
+        h1 {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        /* --- Conteneurs principaux --- */
+        #map-container {
+            flex: 1; /* Le conteneur de la carte prend l'espace restant */
+            min-height: 50vh; /* Hauteur minimale pour la carte */
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        #table-container {
+            height: 35vh; /* Hauteur fixe pour le tableau */
+            overflow-y: auto; /* Permet de faire défiler le tableau verticalement */
+            border-top: 2px solid #ccc;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* --- Style du tableau --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        thead th {
+            background-color: #f2f2f2;
+            position: sticky; /* En-tête de tableau fixe */
+            top: 0;
+            z-index: 10;
+        }
+
+        tbody tr:hover {
+            background-color: #f5f5f5;
+            cursor: pointer;
+        }
+
+        /* --- Style pour la surbrillance --- */
+        .highlight {
+            background-color: #aedff7 !important; /* Couleur de surbrillance */
+            font-weight: bold;
+        }
+        
+        /* --- Style pour les images dans les popups et tooltips --- */
+        .tooltip-photo {
+            width: 80px;
+            height: auto;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .popup-photo {
+            max-width: 100%;
+            max-height: 200px;
+            height: auto;
+            border-radius: 4px;
+        }
+        
+        /* Media query pour les écrans plus petits (mobiles) */
+        @media (max-width: 768px) {
+            body {
+                height: auto; /* Permet le défilement sur mobile si nécessaire */
+            }
+            #map-container {
+                height: 50vh;
+            }
+            #table-container {
+                height: 45vh;
+            }
+            h1 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h2>Carte Leaflet Interactive avec Données CSV</h2>
-  <div id="map"></div>
-  
-  <!-- Container pour le tableau CSV -->
-  <div id="csv-container">
-    <h3 id="csv-title">Données Associées</h3>
-    <div id="csv-content" class="loading">Chargement des données...</div>
-  </div>
+    <h1>Carte interactive des points d'intérêt</h1>
 
-  <!-- Scripts Leaflet -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  
-  <script>
-    // Variables globales
-    let map;
-    let csvData = [];
-    let geoJsonLayer;
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
+
+    <div id="table-container">
+        <table id="data-table">
+            <thead></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // --- 1. CONFIGURATION ---
+    const GEOJSON_URL = 'test json.geojson';
+    const CSV_URL = 'test stmedard.csv';
+    const DEFAULT_PHOTO_URL = '20250904_153527.jpg'; // Photo par défaut
+
+    // Dictionnaire pour lier les fid aux couches Leaflet et aux lignes de tableau
+    const layerMap = {}; // key: fid, value: leafletLayer
+    const rowMap = {};   // key: fid, value: tableRowElement
     
-    // Configuration des photos par défaut
-    const defaultPhoto = "20250904_153527.jpg";
-    
-    // Initialisation de la carte
-    function initMap() {
-      map = L.map('map').setView([46.8, 0.5], 9);
-      
-      // Fond de carte OSM
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(map);
-    }
-    
-    // Fonction pour obtenir la photo d'une entité
-    function getEntityPhoto(feature) {
-      // Vérifie plusieurs propriétés possibles pour la photo
-      const photoProperty = feature.properties.photo || 
-                           feature.properties.image || 
-                           feature.properties.img || 
-                           defaultPhoto;
-      return photoProperty;
-    }
-    
-    // Fonction pour obtenir toutes les photos d'une entité (pour le futur)
-    function getEntityPhotos(feature) {
-      let photos = [];
-      
-      // Si c'est un tableau de photos
-      if (feature.properties.photos && Array.isArray(feature.properties.photos)) {
-        photos = feature.properties.photos;
-      }
-      // Si c'est une seule photo
-      else if (feature.properties.photo || feature.properties.image || feature.properties.img) {
-        photos = [getEntityPhoto(feature)];
-      }
-      // Photo par défaut
-      else {
-        photos = [defaultPhoto];
-      }
-      
-      return photos;
-    }
-    
-    // Fonction pour créer le contenu HTML des photos dans la popup
-    function createPhotosHTML(photos) {
-      return photos.map(photo => 
-        `<img src="${photo}" class="popup-img" alt="Photo" onerror="this.style.display='none';">`
-      ).join('');
-    }
-    
-    // Fonction pour créer un tooltip personnalisé
-    function createTooltip(feature) {
-      const photo = getEntityPhoto(feature);
-      const name = feature.properties.nom || feature.properties.name || "Entité";
-      
-      return `
-        <div class="custom-tooltip">
-          <div><strong>${name}</strong></div>
-          <img src="${photo}" class="tooltip-img" alt="Aperçu" onerror="this.style.display='none';">
-        </div>
-      `;
-    }
-    
-    // Fonction pour mettre en surbrillance une ligne du tableau
-    function highlightTableRow(identifier) {
-      // Retire la surbrillance précédente
-      document.querySelectorAll('#csv-table tr.highlighted').forEach(row => {
-        row.classList.remove('highlighted');
-      });
-      
-      // Trouve la ligne correspondante dans le CSV
-      const rows = document.querySelectorAll('#csv-table tbody tr');
-      rows.forEach((row, index) => {
-        const rowData = csvData[index];
-        if (rowData && rowData.nom === identifier || 
-            rowData && rowData.name === identifier ||
-            rowData && rowData.id === identifier) {
-          row.classList.add('highlighted');
-          // Scroll vers la ligne
-          row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      });
-    }
-    
-    // Fonction pour charger et afficher le CSV
-    function loadCSV() {
-      fetch('test stmedard.csv')
-        .then(response => response.text())
-        .then(csvText => {
-          Papa.parse(csvText, {
-            header: true,
-            skipEmptyLines: true,
-            complete: function(results) {
-              csvData = results.data;
-              displayCSVTable(csvData);
-            },
-            error: function(error) {
-              console.error('Erreur lors du parsing CSV:', error);
-              document.getElementById('csv-content').innerHTML = 
-                '<p style="color: red; padding: 20px;">Erreur lors du chargement des données CSV</p>';
-            }
-          });
-        })
-        .catch(error => {
-          console.error('Erreur lors du chargement du fichier CSV:', error);
-          document.getElementById('csv-content').innerHTML = 
-            '<p style="color: red; padding: 20px;">Impossible de charger le fichier CSV</p>';
+    // --- 2. INITIALISATION DE LA CARTE ---
+    const map = L.map('map').setView([44.87, -0.70], 13); // Centré approximativement
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // --- 3. CHARGEMENT ASYNCHRONE DES DONNÉES (GEOJSON & CSV) ---
+    Promise.all([
+        fetch(GEOJSON_URL).then(response => response.json()),
+        fetch(CSV_URL).then(response => response.text())
+    ])
+    .then(([geojsonFeatures, csvText]) => {
+        const csvData = Papa.parse(csvText, { header: true, skipEmptyLines: true }).data;
+        
+        // --- 4. TRAITEMENT ET AFFICHAGE DES DONNÉES CSV DANS LE TABLEAU ---
+        const tableHead = document.querySelector('#data-table thead');
+        const tableBody = document.querySelector('#data-table tbody');
+        
+        // Création de l'en-tête du tableau
+        const headers = Object.keys(csvData[0]);
+        const headerRow = document.createElement('tr');
+        headers.forEach(headerText => {
+            const th = document.createElement('th');
+            th.textContent = headerText;
+            headerRow.appendChild(th);
         });
-    }
-    
-    // Fonction pour afficher le tableau CSV
-    function displayCSVTable(data) {
-      if (!data || data.length === 0) {
-        document.getElementById('csv-content').innerHTML = 
-          '<p style="padding: 20px;">Aucune donnée trouvée dans le fichier CSV</p>';
-        return;
-      }
-      
-      const headers = Object.keys(data[0]);
-      
-      let tableHTML = '<table id="csv-table"><thead><tr>';
-      headers.forEach(header => {
-        tableHTML += `<th>${header}</th>`;
-      });
-      tableHTML += '</tr></thead><tbody>';
-      
-      data.forEach((row, index) => {
-        tableHTML += '<tr>';
-        headers.forEach(header => {
-          const cellValue = row[header] || '';
-          tableHTML += `<td>${cellValue}</td>`;
-        });
-        tableHTML += '</tr>';
-      });
-      
-      tableHTML += '</tbody></table>';
-      document.getElementById('csv-content').innerHTML = tableHTML;
-    }
-    
-    // Fonction pour charger le GeoJSON
-    function loadGeoJSON() {
-      fetch("test json.geojson")
-        .then(response => response.json())
-        .then(data => {
-          geoJsonLayer = L.geoJSON(data, {
-            onEachFeature: function (feature, layer) {
-              const entityNotes = feature.properties.Notes || 
-                                feature.properties.notes || 
-                                "Point d'intérêt";
-              const photos = getEntityPhotos(feature);
-              const photosHTML = createPhotosHTML(photos);
-              
-              // Popup avec photo(s)
-              layer.bindPopup(`
-                <div class="popup-content">
-                  <div class="popup-title">${entityNotes}</div>
-                  ${photosHTML}
-                </div>
-              `);
-              
-              // Tooltip au survol
-              const tooltipContent = createTooltip(feature);
-              layer.bindTooltip(tooltipContent, {
-                permanent: false,
-                direction: 'top',
-                className: 'custom-tooltip'
-              });
-              
-              // Événement de clic pour mettre en surbrillance le tableau
-              layer.on('click', function(e) {
-                const fid = feature.properties.fid || feature.properties.FID;
-                if (fid) {
-                  highlightTableRow(fid);
+        tableHead.appendChild(headerRow);
+
+        // Remplissage du tableau
+        csvData.forEach(rowData => {
+            const tr = document.createElement('tr');
+            tr.dataset.fid = rowData.fid; // Liaison via l'attribut data-fid
+
+            headers.forEach(header => {
+                const td = document.createElement('td');
+                td.textContent = rowData[header];
+                tr.appendChild(td);
+            });
+            tableBody.appendChild(tr);
+            rowMap[rowData.fid] = tr; // Stocker la référence de la ligne
+
+            // Ajout de l'événement de clic sur la ligne du tableau
+            tr.addEventListener('click', () => {
+                const fid = tr.dataset.fid;
+                const layer = layerMap[fid];
+                if (layer) {
+                    map.flyTo(layer.getLatLng(), 17); // Centre la carte et zoome sur le point
+                    layer.openPopup();
+                    highlightFeature(fid); // Appel de la fonction de surbrillance
                 }
-              });
-            },
-            style: {
-              color: "blue",
-              weight: 2,
-              fillOpacity: 0.4,
-              fillColor: "lightblue"
-            },
-            pointToLayer: function (feature, latlng) {
-              return L.circleMarker(latlng, {
-                radius: 8,
-                fillColor: "orange",
-                color: "#000",
-                weight: 1,
-                opacity: 1,
-                fillOpacity: 0.8
-              });
-            }
-          }).addTo(map);
-          
-          // Ajuste la vue de la carte sur les données
-          if (geoJsonLayer.getBounds().isValid()) {
-            map.fitBounds(geoJsonLayer.getBounds());
-          }
-        })
-        .catch(error => {
-          console.error('Erreur lors du chargement du GeoJSON:', error);
+            });
         });
-    }
-    
-    // Fonction pour charger la seconde couche GeoJSON (optionnelle)
-    function loadSecondGeoJSON() {
-      fetch("test json 2.geojson")
-        .then(response => response.json())
-        .then(data => {
-          L.geoJSON(data, {
-            onEachFeature: function (feature, layer) {
-              const entityName = feature.properties.nom || 
-                               feature.properties.name || 
-                               "Entité couche 2";
-              
-              layer.bindPopup(`
-                <div class="popup-content">
-                  <div class="popup-title">${entityName} (Couche 2)</div>
-                  <img src="${defaultPhoto}" class="popup-img" alt="Photo" onerror="this.style.display='none';">
-                </div>
-              `);
-            },
-            style: {
-              color: "red",
-              weight: 2,
-              fillOpacity: 0.3,
-              fillColor: "pink"
-            },
-            pointToLayer: function (feature, latlng) {
-              return L.circleMarker(latlng, {
-                radius: 6,
-                fillColor: "red",
-                color: "#000",
-                weight: 1,
-                opacity: 1,
-                fillOpacity: 0.6
-              });
+
+        // --- 5. TRAITEMENT ET AFFICHAGE DES DONNÉES GEOJSON SUR LA CARTE ---
+        L.geoJSON(geojsonFeatures, {
+            onEachFeature: (feature, layer) => {
+                const props = feature.properties;
+                const fid = props.fid;
+                layerMap[fid] = layer; // Stocker la référence de la couche
+
+                // Définir la photo (avec fallback)
+                const photoUrl = props.Photo && props.Photo.trim() !== '' ? props.Photo : DEFAULT_PHOTO_URL;
+
+                // Création du contenu pour le tooltip (survol)
+                const tooltipContent = `
+                    <b>${props.Notes || 'Sans description'}</b><br>
+                    <img src="${photoUrl}" alt="Aperçu" class="tooltip-photo">
+                `;
+                layer.bindTooltip(tooltipContent);
+
+                // Création du contenu pour le popup (clic)
+                const popupContent = `
+                    <img src="${photoUrl}" alt="${props.Notes}" class="popup-photo">
+                `;
+                layer.bindPopup(popupContent);
+
+                // Ajout de l'événement de clic sur le marqueur
+                layer.on('click', () => {
+                    highlightFeature(fid);
+                });
             }
-          }).addTo(map);
-        })
-        .catch(error => {
-          console.error('Erreur lors du chargement du second GeoJSON:', error);
-        });
-    }
-    
-    // Initialisation de l'application
-    document.addEventListener('DOMContentLoaded', function() {
-      initMap();
-      loadCSV();
-      loadGeoJSON();
-      loadSecondGeoJSON(); // Optionnel
+        }).addTo(map);
+
+    })
+    .catch(error => {
+        console.error("Erreur lors du chargement des données:", error);
+        alert("Impossible de charger les données. Vérifiez la console pour plus de détails.");
     });
-  </script>
+
+    // --- 6. FONCTION DE SYNCHRONISATION/SURBRILLANCE ---
+    let lastHighlightedFid = null;
+
+    function highlightFeature(fid) {
+        // Réinitialiser la surbrillance précédente
+        if (lastHighlightedFid) {
+            rowMap[lastHighlightedFid]?.classList.remove('highlight');
+        }
+
+        // Appliquer la nouvelle surbrillance
+        const targetRow = rowMap[fid];
+        if (targetRow) {
+            targetRow.classList.add('highlight');
+            // Faire défiler le tableau pour que la ligne soit visible
+            targetRow.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+        
+        lastHighlightedFid = fid;
+    }
+});
+</script>
+
 </body>
 </html>
