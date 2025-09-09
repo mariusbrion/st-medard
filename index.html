@@ -2,143 +2,425 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Carte Leaflet Test avec CSV</title>
+  <title>Carte Leaflet Interactive</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <!-- Feuilles de style Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-
+  <!-- PapaParse pour parser le CSV -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+    }
+    
+    h2 {
+      text-align: center;
+      color: #333;
+      margin: 20px 0;
+    }
+    
     #map {
       width: 100%;
       height: 600px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
+    
+    /* Styles pour les popups */
     .popup-img {
-      width: 200px;
+      width: 250px;
+      max-width: 100%;
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      margin-top: 10px;
     }
-    #csv-table {
-      margin-top: 20px;
-      border-collapse: collapse;
-      width: 100%;
+    
+    .popup-content {
+      max-width: 280px;
     }
-    #csv-table th, #csv-table td {
-      border: 1px solid #ddd;
-      padding: 8px;
+    
+    .popup-title {
+      font-weight: bold;
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 8px;
     }
-    #csv-table tr.highlight {
-      background-color: yellow;
+    
+    /* Styles pour les tooltips */
+    .custom-tooltip {
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-    #preview {
-      position: absolute;
+    
+    .tooltip-img {
+      width: 150px;
+      border-radius: 4px;
+      margin-top: 5px;
+    }
+    
+    /* Styles pour le tableau CSV */
+    #csv-container {
+      margin: 20px;
       background: white;
-      padding: 5px;
-      border: 1px solid gray;
-      border-radius: 4px;
-      display: none;
-      pointer-events: none;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
     }
-    #preview img {
-      width: 120px;
-      border-radius: 4px;
+    
+    #csv-title {
+      background: #4CAF50;
+      color: white;
+      padding: 15px 20px;
+      margin: 0;
+      font-size: 18px;
+    }
+    
+    #csv-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0;
+    }
+    
+    #csv-table th {
+      background: #f8f9fa;
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 2px solid #dee2e6;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    #csv-table td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #dee2e6;
+      transition: background-color 0.3s ease;
+    }
+    
+    #csv-table tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+    
+    #csv-table tr:hover {
+      background-color: #e3f2fd;
+    }
+    
+    /* Ligne mise en surbrillance */
+    #csv-table tr.highlighted {
+      background-color: #ffeb3b !important;
+      animation: highlight 2s ease-in-out;
+    }
+    
+    @keyframes highlight {
+      0% { background-color: #ff9800; }
+      100% { background-color: #ffeb3b; }
+    }
+    
+    /* Loading spinner */
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+      #map {
+        height: 400px;
+      }
+      
+      #csv-container {
+        margin: 10px;
+      }
+      
+      #csv-table {
+        font-size: 14px;
+      }
+      
+      .popup-img {
+        width: 200px;
+      }
     }
   </style>
 </head>
 <body>
-  <h2>Carte interactive Leaflet + CSV</h2>
+  <h2>Carte Leaflet Interactive avec Données CSV</h2>
   <div id="map"></div>
+  
+  <!-- Container pour le tableau CSV -->
+  <div id="csv-container">
+    <h3 id="csv-title">Données Associées</h3>
+    <div id="csv-content" class="loading">Chargement des données...</div>
+  </div>
 
-  <!-- Aperçu photo sur survol -->
-  <div id="preview"><img src="20250904_153527.jpg"></div>
-
-  <!-- Tableau CSV -->
-  <h3>Données CSV liées</h3>
-  <table id="csv-table"></table>
-
-  <!-- Scripts -->
+  <!-- Scripts Leaflet -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/papaparse@5.3.2/papaparse.min.js"></script>
-
+  
   <script>
-    // Initialisation de la carte
-    var map = L.map('map').setView([46.8, 0.5], 9);
-
-    // Fond de carte
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    // Charger et afficher le CSV dans un tableau
+    // Variables globales
+    let map;
     let csvData = [];
-    Papa.parse("test stmedard.csv", {
-      download: true,
-      header: true,
-      complete: function(results) {
-        csvData = results.data;
-        renderTable(csvData);
+    let geoJsonLayer;
+    
+    // Configuration des photos par défaut
+    const defaultPhoto = "20250904_153527.jpg";
+    
+    // Initialisation de la carte
+    function initMap() {
+      map = L.map('map').setView([46.8, 0.5], 9);
+      
+      // Fond de carte OSM
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+    }
+    
+    // Fonction pour obtenir la photo d'une entité
+    function getEntityPhoto(feature) {
+      // Vérifie plusieurs propriétés possibles pour la photo
+      const photoProperty = feature.properties.photo || 
+                           feature.properties.image || 
+                           feature.properties.img || 
+                           defaultPhoto;
+      return photoProperty;
+    }
+    
+    // Fonction pour obtenir toutes les photos d'une entité (pour le futur)
+    function getEntityPhotos(feature) {
+      let photos = [];
+      
+      // Si c'est un tableau de photos
+      if (feature.properties.photos && Array.isArray(feature.properties.photos)) {
+        photos = feature.properties.photos;
       }
-    });
-
-    function renderTable(data) {
-      const table = document.getElementById("csv-table");
-      if (data.length === 0) return;
-
-      // En-têtes
-      const headers = Object.keys(data[0]);
-      let thead = "<tr>" + headers.map(h => `<th>${h}</th>`).join("") + "</tr>";
-      let rows = data.map(row => {
-        return "<tr data-id='"+row.id+"'>" +
-               headers.map(h => `<td>${row[h]}</td>`).join("") +
-               "</tr>";
-      }).join("");
-      table.innerHTML = thead + rows;
+      // Si c'est une seule photo
+      else if (feature.properties.photo || feature.properties.image || feature.properties.img) {
+        photos = [getEntityPhoto(feature)];
+      }
+      // Photo par défaut
+      else {
+        photos = [defaultPhoto];
+      }
+      
+      return photos;
     }
-
-    // Aperçu photo
-    const preview = document.getElementById("preview");
-
-    function showPreview(e) {
-      preview.style.display = "block";
-      preview.style.left = (e.originalEvent.pageX + 10) + "px";
-      preview.style.top = (e.originalEvent.pageY + 10) + "px";
+    
+    // Fonction pour créer le contenu HTML des photos dans la popup
+    function createPhotosHTML(photos) {
+      return photos.map(photo => 
+        `<img src="${photo}" class="popup-img" alt="Photo" onerror="this.style.display='none';">`
+      ).join('');
     }
-    function hidePreview() {
-      preview.style.display = "none";
+    
+    // Fonction pour créer un tooltip personnalisé
+    function createTooltip(feature) {
+      const photo = getEntityPhoto(feature);
+      const name = feature.properties.nom || feature.properties.name || "Entité";
+      
+      return `
+        <div class="custom-tooltip">
+          <div><strong>${name}</strong></div>
+          <img src="${photo}" class="tooltip-img" alt="Aperçu" onerror="this.style.display='none';">
+        </div>
+      `;
     }
-
-    // Charger le GeoJSON
-    fetch("test json.geojson")
-      .then(r => r.json())
-      .then(data => {
-        L.geoJSON(data, {
-          onEachFeature: function (feature, layer) {
-            // Survol → aperçu photo
-            layer.on("mouseover", showPreview);
-            layer.on("mouseout", hidePreview);
-
-            // Clic → mettre en surbrillance la ligne correspondante
-            layer.on("click", function() {
-              let fid = feature.properties.id;
-              let rows = document.querySelectorAll("#csv-table tr");
-              rows.forEach(r => r.classList.remove("highlight"));
-              let target = document.querySelector(`#csv-table tr[data-id='${fid}']`);
-              if (target) target.classList.add("highlight");
-              target.scrollIntoView({ behavior: "smooth", block: "center" });
-            });
-          },
-          pointToLayer: function (feature, latlng) {
-            return L.circleMarker(latlng, {
-              radius: 8,
-              fillColor: "orange",
-              color: "#000",
-              weight: 1,
-              opacity: 1,
-              fillOpacity: 0.8
-            });
-          }
-        }).addTo(map);
+    
+    // Fonction pour mettre en surbrillance une ligne du tableau
+    function highlightTableRow(identifier) {
+      // Retire la surbrillance précédente
+      document.querySelectorAll('#csv-table tr.highlighted').forEach(row => {
+        row.classList.remove('highlighted');
       });
+      
+      // Trouve la ligne correspondante dans le CSV
+      const rows = document.querySelectorAll('#csv-table tbody tr');
+      rows.forEach((row, index) => {
+        const rowData = csvData[index];
+        if (rowData && rowData.nom === identifier || 
+            rowData && rowData.name === identifier ||
+            rowData && rowData.id === identifier) {
+          row.classList.add('highlighted');
+          // Scroll vers la ligne
+          row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+    }
+    
+    // Fonction pour charger et afficher le CSV
+    function loadCSV() {
+      fetch('test stmedard.csv')
+        .then(response => response.text())
+        .then(csvText => {
+          Papa.parse(csvText, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+              csvData = results.data;
+              displayCSVTable(csvData);
+            },
+            error: function(error) {
+              console.error('Erreur lors du parsing CSV:', error);
+              document.getElementById('csv-content').innerHTML = 
+                '<p style="color: red; padding: 20px;">Erreur lors du chargement des données CSV</p>';
+            }
+          });
+        })
+        .catch(error => {
+          console.error('Erreur lors du chargement du fichier CSV:', error);
+          document.getElementById('csv-content').innerHTML = 
+            '<p style="color: red; padding: 20px;">Impossible de charger le fichier CSV</p>';
+        });
+    }
+    
+    // Fonction pour afficher le tableau CSV
+    function displayCSVTable(data) {
+      if (!data || data.length === 0) {
+        document.getElementById('csv-content').innerHTML = 
+          '<p style="padding: 20px;">Aucune donnée trouvée dans le fichier CSV</p>';
+        return;
+      }
+      
+      const headers = Object.keys(data[0]);
+      
+      let tableHTML = '<table id="csv-table"><thead><tr>';
+      headers.forEach(header => {
+        tableHTML += `<th>${header}</th>`;
+      });
+      tableHTML += '</tr></thead><tbody>';
+      
+      data.forEach((row, index) => {
+        tableHTML += '<tr>';
+        headers.forEach(header => {
+          const cellValue = row[header] || '';
+          tableHTML += `<td>${cellValue}</td>`;
+        });
+        tableHTML += '</tr>';
+      });
+      
+      tableHTML += '</tbody></table>';
+      document.getElementById('csv-content').innerHTML = tableHTML;
+    }
+    
+    // Fonction pour charger le GeoJSON
+    function loadGeoJSON() {
+      fetch("test json.geojson")
+        .then(response => response.json())
+        .then(data => {
+          geoJsonLayer = L.geoJSON(data, {
+            onEachFeature: function (feature, layer) {
+              const entityName = feature.properties.nom || 
+                               feature.properties.name || 
+                               "Entité sans nom";
+              const photos = getEntityPhotos(feature);
+              const photosHTML = createPhotosHTML(photos);
+              
+              // Popup avec photo(s)
+              layer.bindPopup(`
+                <div class="popup-content">
+                  <div class="popup-title">${entityName}</div>
+                  ${photosHTML}
+                </div>
+              `);
+              
+              // Tooltip au survol
+              const tooltipContent = createTooltip(feature);
+              layer.bindTooltip(tooltipContent, {
+                permanent: false,
+                direction: 'top',
+                className: 'custom-tooltip'
+              });
+              
+              // Événement de clic pour mettre en surbrillance le tableau
+              layer.on('click', function(e) {
+                const identifier = feature.properties.nom || 
+                                 feature.properties.name || 
+                                 feature.properties.id;
+                if (identifier) {
+                  highlightTableRow(identifier);
+                }
+              });
+            },
+            style: {
+              color: "blue",
+              weight: 2,
+              fillOpacity: 0.4,
+              fillColor: "lightblue"
+            },
+            pointToLayer: function (feature, latlng) {
+              return L.circleMarker(latlng, {
+                radius: 8,
+                fillColor: "orange",
+                color: "#000",
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.8
+              });
+            }
+          }).addTo(map);
+          
+          // Ajuste la vue de la carte sur les données
+          if (geoJsonLayer.getBounds().isValid()) {
+            map.fitBounds(geoJsonLayer.getBounds());
+          }
+        })
+        .catch(error => {
+          console.error('Erreur lors du chargement du GeoJSON:', error);
+        });
+    }
+    
+    // Fonction pour charger la seconde couche GeoJSON (optionnelle)
+    function loadSecondGeoJSON() {
+      fetch("test json 2.geojson")
+        .then(response => response.json())
+        .then(data => {
+          L.geoJSON(data, {
+            onEachFeature: function (feature, layer) {
+              const entityName = feature.properties.nom || 
+                               feature.properties.name || 
+                               "Entité couche 2";
+              
+              layer.bindPopup(`
+                <div class="popup-content">
+                  <div class="popup-title">${entityName} (Couche 2)</div>
+                  <img src="${defaultPhoto}" class="popup-img" alt="Photo" onerror="this.style.display='none';">
+                </div>
+              `);
+            },
+            style: {
+              color: "red",
+              weight: 2,
+              fillOpacity: 0.3,
+              fillColor: "pink"
+            },
+            pointToLayer: function (feature, latlng) {
+              return L.circleMarker(latlng, {
+                radius: 6,
+                fillColor: "red",
+                color: "#000",
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.6
+              });
+            }
+          }).addTo(map);
+        })
+        .catch(error => {
+          console.error('Erreur lors du chargement du second GeoJSON:', error);
+        });
+    }
+    
+    // Initialisation de l'application
+    document.addEventListener('DOMContentLoaded', function() {
+      initMap();
+      loadCSV();
+      loadGeoJSON();
+      loadSecondGeoJSON(); // Optionnel
+    });
   </script>
 </body>
 </html>
