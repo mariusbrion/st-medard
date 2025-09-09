@@ -1,400 +1,70 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carte Interactive Avancée</title>
+  <meta charset="utf-8" />
+  <title>Carte Leaflet Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" integrity="sha512-dfbpZfcQtUPvHTkrajAF953GgvmgJdQbbzFKB6MqlCdbDJAxBNseM1CN5mfqN0g1zCmE5wFkAu3J2H/K1EzhUw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- Feuilles de style Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
-    <style>
-        /* --- Style général et responsive --- */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        h1 {
-            text-align: center;
-            margin: 10px 0;
-            font-size: 1.5rem;
-            color: #333;
-        }
-
-        /* --- Message d'erreur --- */
-        .error-message {
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 10px;
-            margin: 10px;
-            border-radius: 4px;
-            border: 1px solid #f5c6cb;
-            display: none;
-        }
-
-        .loading-message {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            padding: 10px;
-            margin: 10px;
-            border-radius: 4px;
-            border: 1px solid #bee5eb;
-            text-align: center;
-        }
-
-        /* --- Conteneurs principaux --- */
-        #map-container {
-            flex: 1;
-            min-height: 50vh;
-        }
-        #map {
-            width: 100%;
-            height: 100%;
-        }
-
-        #table-container {
-            height: 35vh;
-            overflow-y: auto;
-            border-top: 2px solid #ccc;
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
-        }
-
-        /* --- Style du tableau --- */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 8px 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        thead th {
-            background-color: #f2f2f2;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        tbody tr:hover {
-            background-color: #f5f5f5;
-            cursor: pointer;
-        }
-
-        /* --- Style pour la surbrillance --- */
-        .highlight {
-            background-color: #aedff7 !important;
-            font-weight: bold;
-        }
-        
-        /* --- Style pour les images dans les popups et tooltips --- */
-        .tooltip-photo {
-            width: 80px;
-            height: auto;
-            display: block;
-            margin-bottom: 5px;
-            border-radius: 4px;
-        }
-
-        .popup-photo {
-            max-width: 100%;
-            max-height: 200px;
-            height: auto;
-            border-radius: 4px;
-        }
-
-        .image-error {
-            width: 80px;
-            height: 60px;
-            background-color: #f0f0f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #666;
-            font-size: 12px;
-            border-radius: 4px;
-        }
-        
-        /* Media query pour les écrans plus petits */
-        @media (max-width: 768px) {
-            body {
-                height: auto;
-            }
-            #map-container {
-                height: 50vh;
-            }
-            #table-container {
-                height: 45vh;
-            }
-            h1 {
-                font-size: 1.2rem;
-            }
-        }
-    </style>
+  <style>
+    #map {
+      width: 100%;
+      height: 600px;
+    }
+    .popup-img {
+      width: 200px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+  </style>
 </head>
 <body>
-    <h1>Carte interactive des points d'intérêt</h1>
-    
-    <div class="loading-message" id="loading-message">Chargement des données...</div>
-    <div class="error-message" id="error-message"></div>
+  <h2>Test Leaflet avec GeoJSON et Image</h2>
+  <div id="map"></div>
 
-    <div id="map-container">
-        <div id="map"></div>
-    </div>
+  <!-- Scripts Leaflet -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-    <div id="table-container">
-        <table id="data-table">
-            <thead></thead>
-            <tbody></tbody>
-        </table>
-    </div>
+  <script>
+    // Initialisation de la carte
+    var map = L.map('map').setView([46.8, 0.5], 9); // centre approximatif (à ajuster)
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    // --- 1. CONFIGURATION ---
-    const GEOJSON_URL = 'test json.geojson';
-    const CSV_URL = 'test stmedard.csv';
-    const DEFAULT_PHOTO_URL = '20250904_153527.jpg';
-
-    // Éléments DOM
-    const loadingMessage = document.getElementById('loading-message');
-    const errorMessage = document.getElementById('error-message');
-    const tableHead = document.querySelector('#data-table thead');
-    const tableBody = document.querySelector('#data-table tbody');
-
-    // Dictionnaires pour lier les fid aux couches Leaflet et aux lignes de tableau
-    const layerMap = {};
-    const rowMap = {};
-    
-    // --- 2. INITIALISATION DE LA CARTE ---
-    const map = L.map('map').setView([44.87, -0.70], 13);
+    // Fond de carte OSM
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // --- 3. FONCTIONS UTILITAIRES ---
-    function showError(message) {
-        errorMessage.textContent = message;
-        errorMessage.style.display = 'block';
-        loadingMessage.style.display = 'none';
-    }
-
-    function hideLoading() {
-        loadingMessage.style.display = 'none';
-    }
-
-    function createImageElement(src, className, altText = '') {
-        const img = document.createElement('img');
-        img.className = className;
-        img.alt = altText;
-        
-        // Gestion des erreurs d'image
-        img.onerror = function() {
-            const placeholder = document.createElement('div');
-            placeholder.className = 'image-error';
-            placeholder.textContent = 'Image non disponible';
-            this.parentNode?.replaceChild(placeholder, this);
-        };
-        
-        img.src = src;
-        return img;
-    }
-
-    function validateData(csvData, geojsonFeatures) {
-        if (!csvData || csvData.length === 0) {
-            throw new Error('Les données CSV sont vides ou invalides');
-        }
-        
-        if (!geojsonFeatures || !geojsonFeatures.features || geojsonFeatures.features.length === 0) {
-            throw new Error('Les données GeoJSON sont vides ou invalides');
-        }
-        
-        // Vérifier que le premier élément CSV a bien des propriétés
-        if (!csvData[0] || Object.keys(csvData[0]).length === 0) {
-            throw new Error('Structure des données CSV invalide');
-        }
-        
-        return true;
-    }
-
-    // --- 4. FONCTION DE SYNCHRONISATION/SURBRILLANCE ---
-    let lastHighlightedFid = null;
-
-    function highlightFeature(fid) {
-        // Réinitialiser la surbrillance précédente
-        if (lastHighlightedFid && rowMap[lastHighlightedFid]) {
-            rowMap[lastHighlightedFid].classList.remove('highlight');
-        }
-
-        // Appliquer la nouvelle surbrillance
-        const targetRow = rowMap[fid];
-        if (targetRow) {
-            targetRow.classList.add('highlight');
-            // Faire défiler le tableau pour que la ligne soit visible
-            targetRow.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
+    // Chargement du GeoJSON
+    fetch("test json 2.geojson")
+      .then(response => response.json())
+      .then(data => {
+        L.geoJSON(data, {
+          onEachFeature: function (feature, layer) {
+            // Popup avec image
+            layer.bindPopup(`
+              <b>${feature.properties.nom || "Sans nom"}</b><br>
+              <img src="20250904_153527.jpg" class="popup-img">
+            `);
+          },
+          style: {
+            color: "blue",
+            weight: 2,
+            fillOpacity: 0.4
+          },
+          pointToLayer: function (feature, latlng) {
+            return L.circleMarker(latlng, {
+              radius: 8,
+              fillColor: "orange",
+              color: "#000",
+              weight: 1,
+              opacity: 1,
+              fillOpacity: 0.8
             });
-        }
-        
-        lastHighlightedFid = fid;
-    }
-
-    // --- 5. CRÉATION DU TABLEAU ---
-    function createTable(csvData) {
-        // Effacer le contenu existant
-        tableHead.innerHTML = '';
-        tableBody.innerHTML = '';
-        
-        const headers = Object.keys(csvData[0]);
-        const headerRow = document.createElement('tr');
-        
-        headers.forEach(headerText => {
-            const th = document.createElement('th');
-            th.textContent = headerText;
-            headerRow.appendChild(th);
-        });
-        tableHead.appendChild(headerRow);
-
-        // Remplissage du tableau
-        csvData.forEach(rowData => {
-            // Vérifier que fid existe
-            if (!rowData.fid) {
-                console.warn('Ligne sans fid trouvée:', rowData);
-                return;
-            }
-            
-            const tr = document.createElement('tr');
-            tr.dataset.fid = rowData.fid;
-
-            headers.forEach(header => {
-                const td = document.createElement('td');
-                td.textContent = rowData[header] || '';
-                tr.appendChild(td);
-            });
-            
-            tableBody.appendChild(tr);
-            rowMap[rowData.fid] = tr;
-
-            // Ajout de l'événement de clic sur la ligne du tableau
-            tr.addEventListener('click', () => {
-                const fid = tr.dataset.fid;
-                const layer = layerMap[fid];
-                if (layer) {
-                    try {
-                        map.flyTo(layer.getLatLng(), 17);
-                        layer.openPopup();
-                        highlightFeature(fid);
-                    } catch (error) {
-                        console.error('Erreur lors du centrage sur le point:', error);
-                    }
-                }
-            });
-        });
-    }
-
-    // --- 6. CRÉATION DES MARQUEURS ---
-    function createMarkers(geojsonFeatures) {
-        L.geoJSON(geojsonFeatures, {
-            onEachFeature: (feature, layer) => {
-                const props = feature.properties;
-                const fid = props.fid;
-                
-                if (!fid) {
-                    console.warn('Feature sans fid trouvée:', props);
-                    return;
-                }
-                
-                layerMap[fid] = layer;
-
-                // Définir la photo (avec fallback)
-                const photoUrl = (props.Photo && props.Photo.trim() !== '') ? props.Photo : DEFAULT_PHOTO_URL;
-                const description = props.Notes || 'Sans description';
-
-                // Création du contenu pour le tooltip (survol)
-                const tooltipDiv = document.createElement('div');
-                const tooltipTitle = document.createElement('b');
-                tooltipTitle.textContent = description;
-                tooltipDiv.appendChild(tooltipTitle);
-                tooltipDiv.appendChild(document.createElement('br'));
-                tooltipDiv.appendChild(createImageElement(photoUrl, 'tooltip-photo', 'Aperçu'));
-                
-                layer.bindTooltip(tooltipDiv);
-
-                // Création du contenu pour le popup (clic)
-                const popupDiv = document.createElement('div');
-                popupDiv.appendChild(createImageElement(photoUrl, 'popup-photo', description));
-                
-                layer.bindPopup(popupDiv);
-
-                // Ajout de l'événement de clic sur le marqueur
-                layer.on('click', () => {
-                    highlightFeature(fid);
-                });
-            }
+          }
         }).addTo(map);
-    }
-
-    // --- 7. CHARGEMENT ASYNCHRONE DES DONNÉES ---
-    async function loadData() {
-        try {
-            const [geojsonResponse, csvResponse] = await Promise.all([
-                fetch(GEOJSON_URL),
-                fetch(CSV_URL)
-            ]);
-
-            // Vérifier les réponses HTTP
-            if (!geojsonResponse.ok) {
-                throw new Error(`Erreur lors du chargement du fichier GeoJSON: ${geojsonResponse.status} ${geojsonResponse.statusText}`);
-            }
-            
-            if (!csvResponse.ok) {
-                throw new Error(`Erreur lors du chargement du fichier CSV: ${csvResponse.status} ${csvResponse.statusText}`);
-            }
-
-            const geojsonFeatures = await geojsonResponse.json();
-            const csvText = await csvResponse.text();
-            
-            const csvParseResult = Papa.parse(csvText, { 
-                header: true, 
-                skipEmptyLines: true,
-                transformHeader: header => header.trim() // Nettoie les en-têtes
-            });
-            
-            if (csvParseResult.errors.length > 0) {
-                console.warn('Erreurs lors du parsing CSV:', csvParseResult.errors);
-            }
-            
-            const csvData = csvParseResult.data;
-            
-            // Validation des données
-            validateData(csvData, geojsonFeatures);
-            
-            // Traitement des données
-            createTable(csvData);
-            createMarkers(geojsonFeatures);
-            
-            hideLoading();
-            
-        } catch (error) {
-            console.error("Erreur lors du chargement des données:", error);
-            showError(`Erreur: ${error.message}`);
-        }
-    }
-
-    // Lancer le chargement des données
-    loadData();
-});
-</script>
-
+      });
+  </script>
 </body>
 </html>
