@@ -313,16 +313,16 @@
         .then(data => {
           geoJsonLayer = L.geoJSON(data, {
             onEachFeature: function (feature, layer) {
-              const entityName = feature.properties.nom || 
-                               feature.properties.name || 
-                               "Entité sans nom";
+              const entityNotes = feature.properties.Notes || 
+                                feature.properties.notes || 
+                                "Point d'intérêt";
               const photos = getEntityPhotos(feature);
               const photosHTML = createPhotosHTML(photos);
               
               // Popup avec photo(s)
               layer.bindPopup(`
                 <div class="popup-content">
-                  <div class="popup-title">${entityName}</div>
+                  <div class="popup-title">${entityNotes}</div>
                   ${photosHTML}
                 </div>
               `);
@@ -337,11 +337,9 @@
               
               // Événement de clic pour mettre en surbrillance le tableau
               layer.on('click', function(e) {
-                const identifier = feature.properties.nom || 
-                                 feature.properties.name || 
-                                 feature.properties.id;
-                if (identifier) {
-                  highlightTableRow(identifier);
+                const fid = feature.properties.fid || feature.properties.FID;
+                if (fid) {
+                  highlightTableRow(fid);
                 }
               });
             },
