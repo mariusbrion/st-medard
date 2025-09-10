@@ -1,0 +1,10 @@
+{
+"type": "FeatureCollection",
+"name": "stationnement",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "id": 159, "Ligne": "8", "x": 407771.04866733, "y": 6426163.0654421598, "Défaut": "Stationnement sur trottoir", "Prop_actio": "Travail de police et de sensibilisation", "PHOTO": "JPEG_20250526115632716.jpg" }, "geometry": { "type": "Point", "coordinates": [ -0.701485446971113, 44.872990901131907 ] } },
+{ "type": "Feature", "properties": { "id": 217, "Ligne": "5", "x": 407532.17578930198, "y": 6426400.9200341096, "Défaut": "Stationnement sur trottoir", "Prop_actio": "Supprimer le stationnement anarchique", "PHOTO": "JPEG_20250721075441169.jpg" }, "geometry": { "type": "Point", "coordinates": [ -0.704647912233885, 44.875029226607012 ] } },
+{ "type": "Feature", "properties": { "id": 218, "Ligne": "5", "x": 407563.75305390003, "y": 6426405.1089145001, "Défaut": "Stationnement sur trottoir", "Prop_actio": "Supprimer le stationnement anarchique", "PHOTO": "JPEG_20250721075500485.jpg" }, "geometry": { "type": "Point", "coordinates": [ -0.704251001460005, 44.875080232242013 ] } }
+]
+}
