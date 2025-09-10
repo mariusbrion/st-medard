@@ -44,11 +44,17 @@
 
         // 3. Chargement et ajout des couches GeoJSON
 
-        // --- Couche des passages piétons (Points) ---
+        // --- Couche des passages piétons (Polylignes) ---
         fetch('pp.geojson')
             .then(response => response.json())
             .then(data => {
                 const ppLayer = L.geoJSON(data, {
+                    style: {
+                        color: "#ff0000", // Rouge vif pour une bonne visibilité
+                        weight: 8,         // Épaisseur plus grande pour la visibilité
+                        opacity: 0.9,
+                        dashArray: '10, 10' // Effet "hachuré" ou pointillé : 10px de trait, 10px d'espace
+                    },
                     onEachFeature: function (feature, layer) {
                         // Création du contenu de la popup à partir des propriétés du GeoJSON
                         let popupContent = `<b>${feature.properties.Notes || 'Information'}</b>`;
@@ -67,7 +73,8 @@
                 overlayMaps["Passages Piétons"] = ppLayer;
                 
                 // Le contrôle des couches est ajouté ici pour s'assurer qu'il est créé après le chargement d'au moins une couche
-                L.control.layers(null, overlayMaps).addTo(map);
+                // (On peut le déplacer après le dernier chargement de GeoJSON pour s'assurer que toutes les couches sont là avant l'initialisation)
+                updateLayerControl();
             });
 
         // --- Couche de la végétation (Polylignes) ---
@@ -86,6 +93,7 @@
                 }).addTo(map); // Ajoutée à la carte par défaut
                 
                 overlayMaps["Végétation"] = vegetationLayer;
+                updateLayerControl();
             });
 
         // --- Couche du stationnement (Polylignes) ---
@@ -104,7 +112,18 @@
                 }).addTo(map); // Ajoutée à la carte par défaut
                 
                 overlayMaps["Stationnement"] = stationnementLayer;
+                updateLayerControl();
             });
+
+        // Fonction pour mettre à jour ou créer le contrôle des couches
+        // Cela garantit que toutes les couches sont prêtes avant l'initialisation du contrôle
+        let layerControl = null;
+        function updateLayerControl() {
+            if (layerControl) {
+                map.removeControl(layerControl);
+            }
+            layerControl = L.control.layers(null, overlayMaps).addTo(map);
+        }
 
     </script>
 </body>
