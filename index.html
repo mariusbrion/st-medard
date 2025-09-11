@@ -7,13 +7,26 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <style>
-        html, body { height: 100%; margin: 0; padding: 0; }
-        #map { height: 100%; }
+        html, body { height: 100%; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        #map { height: 70%; }
+        #csv-container { height: 30%; overflow: auto; padding: 10px; background: #f5f5f5; border-top: 2px solid #ccc; }
+        #csv-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        #csv-table th, #csv-table td { border: 1px solid #ddd; padding: 5px; text-align: left; }
+        #csv-table th { background: #4CAF50; color: white; }
         .popup-photo { max-width: 200px; height: auto; }
+        .highlight { background-color: #ffff99 !important; }
     </style>
 </head>
 <body>
     <div id="map"></div>
+    <div id="csv-container">
+        <h3>Données du tableau</h3>
+        <table id="csv-table">
+            <thead></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
     <script>
         const map = L.map('map').setView([44.84, -0.58], 13);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
@@ -31,15 +44,43 @@
             return content;
         }
 
+        function highlightCSVRow(fid) {
+            document.querySelectorAll('#csv-table tr').forEach(row => row.classList.remove('highlight'));
+            const targetRow = document.querySelector(`tr[data-id="${fid}"]`);
+            if (targetRow) {
+                targetRow.classList.add('highlight');
+                targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
         function addHoverEvents(feature, layer) {
             layer.bindPopup(createPopup(feature));
-            layer.on('mouseover', function(e) {
-                this.openPopup();
-            });
-            layer.on('mouseout', function(e) {
-                this.closePopup();
+            layer.on('mouseover', function(e) { this.openPopup(); });
+            layer.on('mouseout', function(e) { this.closePopup(); });
+            layer.on('click', function(e) { 
+                if (feature.properties.fid) highlightCSVRow(feature.properties.fid);
             });
         }
+
+        // Chargement du CSV
+        fetch('stmedard.csv')
+            .then(response => response.text())
+            .then(data => {
+                const lines = data.split('\n').filter(line => line.trim());
+                const headers = lines[0].split(';');
+                const tbody = document.querySelector('#csv-table tbody');
+                const thead = document.querySelector('#csv-table thead');
+                
+                thead.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
+                
+                lines.slice(1).forEach(line => {
+                    const cells = line.split(';');
+                    const row = document.createElement('tr');
+                    row.setAttribute('data-id', cells[4]); // id passage piéton
+                    row.innerHTML = cells.map(cell => `<td>${cell}</td>`).join('');
+                    tbody.appendChild(row);
+                });
+            });
 
         fetch('pp.geojson')
             .then(response => response.json())
