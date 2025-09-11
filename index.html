@@ -45,11 +45,15 @@
         }
 
         function highlightCSVRow(fid) {
+            console.log('Looking for fid:', fid); // Debug
             document.querySelectorAll('#csv-table tr').forEach(row => row.classList.remove('highlight'));
             const targetRow = document.querySelector(`tr[data-id="${fid}"]`);
+            console.log('Found row:', targetRow); // Debug
             if (targetRow) {
                 targetRow.classList.add('highlight');
                 targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                console.log('No matching row found for fid:', fid);
             }
         }
 
