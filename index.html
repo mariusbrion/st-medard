@@ -13,15 +13,9 @@
      crossorigin=""></script>
 
     <style>
-        /* Style pour que la carte prenne toute la page */
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-        #map {
-            height: 100%;
-        }
+        html, body { height: 100%; margin: 0; padding: 0; }
+        #map { height: 100%; }
+        .popup-photo { max-width: 200px; height: auto; }
     </style>
 </head>
 <body>
@@ -29,98 +23,73 @@
     <div id="map"></div>
 
     <script>
-        // 1. Initialisation de la carte
-        // Centre la vue sur une coordonnée approximative de Bordeaux avec un niveau de zoom adapté
         const map = L.map('map').setView([44.84, -0.58], 13);
 
-        // 2. Ajout du fond de carte "Voyager" de CARTO
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
             subdomains: 'abcd',
             maxZoom: 20
         }).addTo(map);
 
-        // Objet pour stocker nos couches de données, qui sera utilisé par le contrôle des couches
         const overlayMaps = {};
 
-        // 3. Chargement et ajout des couches GeoJSON
+        function createPopup(feature) {
+            let content = `<b>${feature.properties.Notes || 'Information'}</b>`;
+            if (feature.properties.Date) {
+                content += `<br>Date : ${feature.properties.Date}`;
+            }
+            if (feature.properties.Photo) {
+                content += `<br><img src="${feature.properties.Photo}" alt="Photo" class="popup-photo">`;
+            }
+            return content;
+        }
 
-        // --- Couche des passages piétons (Polylignes) ---
         fetch('pp.geojson')
             .then(response => response.json())
             .then(data => {
                 const ppLayer = L.geoJSON(data, {
                     style: {
-                        color: "#ff0000", // Rouge vif pour une bonne visibilité
-                        weight: 8,         // Épaisseur plus grande pour la visibilité
+                        color: "#ff0000",
+                        weight: 8,
                         opacity: 0.9,
-                        dashArray: '10, 10' // Effet "hachuré" ou pointillé : 10px de trait, 10px d'espace
+                        dashArray: '10, 10'
                     },
-                    onEachFeature: function (feature, layer) {
-                        // Création du contenu de la popup à partir des propriétés du GeoJSON
-                        let popupContent = `<b>${feature.properties.Notes || 'Information'}</b>`;
-                        if (feature.properties.Date) {
-                            popupContent += `<br>Date : ${feature.properties.Date}`;
-                        }
-                        if (feature.properties.Photo) {
-                            // Supposant que les photos sont dans un dossier "images/"
-                            popupContent += `<br><img src="images/${feature.properties.Photo}" alt="photo" width="150">`;
-                        }
-                        layer.bindPopup(popupContent);
-                    }
-                }).addTo(map); // Ajoutée à la carte par défaut
+                    onEachFeature: (feature, layer) => layer.bindPopup(createPopup(feature))
+                }).addTo(map);
                 
                 overlayMaps["Passages Piétons"] = ppLayer;
                 updateLayerControl();
             });
 
-        // --- Couche de la végétation (Polylignes) ---
         fetch('vegetation.geojson')
             .then(response => response.json())
             .then(data => {
                 const vegetationLayer = L.geoJSON(data, {
-                    style: {
-                        color: "#28a745", // Couleur verte
-                        weight: 4,
-                        opacity: 0.8
-                    },
-                    onEachFeature: function (feature, layer) {
-                        layer.bindPopup(`<b>Végétation</b><br>${feature.properties.Notes || ''}`);
-                    }
-                }).addTo(map); // Ajoutée à la carte par défaut
+                    style: { color: "#28a745", weight: 4, opacity: 0.8 },
+                    onEachFeature: (feature, layer) => layer.bindPopup(createPopup(feature))
+                }).addTo(map);
                 
                 overlayMaps["Végétation"] = vegetationLayer;
                 updateLayerControl();
             });
 
-        // --- Couche du stationnement (Polylignes) ---
         fetch('stationnement.geojson')
             .then(response => response.json())
             .then(data => {
                 const stationnementLayer = L.geoJSON(data, {
-                    style: {
-                        color: "#007bff", // Couleur bleue
-                        weight: 4,
-                        opacity: 0.8
-                    },
-                    onEachFeature: function (feature, layer) {
-                        layer.bindPopup(`<b>Stationnement</b><br>${feature.properties.Notes || ''}`);
-                    }
-                }).addTo(map); // Ajoutée à la carte par défaut
+                    style: { color: "#007bff", weight: 4, opacity: 0.8 },
+                    onEachFeature: (feature, layer) => layer.bindPopup(createPopup(feature))
+                }).addTo(map);
                 
                 overlayMaps["Stationnement"] = stationnementLayer;
                 updateLayerControl();
             });
 
-        // Fonction pour mettre à jour ou créer le contrôle des couches
         let layerControl = null;
         function updateLayerControl() {
-            if (layerControl) {
-                map.removeControl(layerControl);
-            }
+            if (layerControl) map.removeControl(layerControl);
             layerControl = L.control.layers(null, overlayMaps).addTo(map);
         }
-
     </script>
 </body>
 </html>
