@@ -78,7 +78,12 @@
             .then(data => {
                 const stationnementLayer = L.geoJSON(data, {
                     style: { color: "#007bff", weight: 4, opacity: 0.8 },
-                    onEachFeature: (feature, layer) => layer.bindPopup(createPopup(feature))
+                    onEachFeature: (feature, layer) => {
+                        const popup = L.popup().setContent(createPopup(feature));
+                        layer.on('mouseover', () => layer.openPopup());
+                        layer.on('mouseout', () => layer.closePopup());
+                        layer.bindPopup(popup);
+                    }
                 }).addTo(map);
                 
                 overlayMaps["Stationnement"] = stationnementLayer;
