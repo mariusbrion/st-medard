@@ -45,15 +45,23 @@
         }
 
         function highlightCSVRow(fid) {
-            console.log('Looking for fid:', fid); // Debug
+            console.log(`Looking for fid: "${fid}"`);
             document.querySelectorAll('#csv-table tr').forEach(row => row.classList.remove('highlight'));
+            
+            // Chercher avec sélecteur exact
             const targetRow = document.querySelector(`tr[data-id="${fid}"]`);
-            console.log('Found row:', targetRow); // Debug
+            console.log('Found row:', targetRow);
+            
             if (targetRow) {
                 targetRow.classList.add('highlight');
                 targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                console.log('Row highlighted successfully');
             } else {
-                console.log('No matching row found for fid:', fid);
+                // Debug: lister tous les data-id disponibles
+                const allIds = Array.from(document.querySelectorAll('#csv-table tr[data-id]'))
+                    .map(row => `"${row.getAttribute('data-id')}"`);
+                console.log('Available IDs in CSV:', allIds);
+                console.log(`No matching row found for fid: "${fid}"`);
             }
         }
 
