@@ -3,24 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ma Carte Leaflet</title>
+    <title>Carte Leaflet avec données CSV et GeoJSON</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <style>
-        html, body { height: 100%; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-        #map { height: 70%; }
-        #csv-container { height: 30%; overflow: auto; padding: 10px; background: #f5f5f5; border-top: 2px solid #ccc; }
-        #csv-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        #csv-table th, #csv-table td { border: 1px solid #ddd; padding: 5px; text-align: left; }
-        #csv-table th { background: #4CAF50; color: white; }
-        .popup-photo { max-width: 200px; height: auto; }
-        .highlight { background-color: #ffff99 !important; }
+        html, body { 
+            height: 100%; 
+            margin: 0; 
+            padding: 0; 
+            font-family: Arial, sans-serif; 
+        }
+        #map { 
+            height: 70%; 
+        }
+        #csv-container { 
+            height: 30%; 
+            overflow: auto; 
+            padding: 10px; 
+            background: #f5f5f5; 
+            border-top: 2px solid #ccc; 
+        }
+        #csv-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 12px; 
+        }
+        #csv-table th, #csv-table td { 
+            border: 1px solid #ddd; 
+            padding: 5px; 
+            text-align: left; 
+        }
+        #csv-table th { 
+            background: #4CAF50; 
+            color: white; 
+            position: sticky;
+            top: 0;
+        }
+        .popup-photo { 
+            max-width: 200px; 
+            height: auto; 
+        }
+        .highlight { 
+            background-color: #ffff99 !important; 
+            font-weight: bold;
+        }
+        .layer-control {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+        .layer-control h4 {
+            margin: 0 0 10px 0;
+        }
+        .layer-control label {
+            display: block;
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
     <div id="map"></div>
     <div id="csv-container">
-        <h3>Données du tableau</h3>
+        <h3>Données des passages piétons</h3>
         <table id="csv-table">
             <thead></thead>
             <tbody></tbody>
@@ -28,110 +73,176 @@
     </div>
 
     <script>
+        // Initialisation de la carte
         const map = L.map('map').setView([44.84, -0.58], 13);
+        
+        // Couche de tuiles
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
             subdomains: 'abcd',
             maxZoom: 20
         }).addTo(map);
 
+        // Stockage des couches
         const overlayMaps = {};
+        let csvData = [];
 
+        // Fonction pour créer le contenu des popups
         function createPopup(feature) {
             let content = `<b>${feature.properties.Notes || 'Information'}</b>`;
-            if (feature.properties.Date) content += `<br>Date : ${feature.properties.Date}`;
-            if (feature.properties.Photo) content += `<br><img src="${feature.properties.Photo}" alt="Photo" class="popup-photo">`;
+            if (feature.properties.Date) {
+                content += `<br>Date : ${feature.properties.Date}`;
+            }
+            if (feature.properties.Photo) {
+                content += `<br><img src="${feature.properties.Photo}" alt="Photo" class="popup-photo">`;
+            }
             return content;
         }
 
+        // Fonction pour surligner une ligne du CSV
         function highlightCSVRow(fid) {
-            console.log(`Looking for fid: "${fid}"`);
-            document.querySelectorAll('#csv-table tr').forEach(row => row.classList.remove('highlight'));
+            // Nettoyer l'ID pour correspondre au format du CSV
+            const cleanFid = fid.toString().trim();
             
-            // Chercher avec sélecteur exact
-            const targetRow = document.querySelector(`tr[data-id="${fid}"]`);
-            console.log('Found row:', targetRow);
+            document.querySelectorAll('#csv-table tr').forEach(row => {
+                row.classList.remove('highlight');
+            });
             
-            if (targetRow) {
-                targetRow.classList.add('highlight');
-                targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                console.log('Row highlighted successfully');
-            } else {
-                // Debug: lister tous les data-id disponibles
-                const allIds = Array.from(document.querySelectorAll('#csv-table tr[data-id]'))
-                    .map(row => `"${row.getAttribute('data-id')}"`);
-                console.log('Available IDs in CSV:', allIds);
-                console.log(`No matching row found for fid: "${fid}"`);
+            // Trouver la ligne correspondante
+            const rows = document.querySelectorAll('#csv-table tbody tr');
+            for (let row of rows) {
+                const rowId = row.getAttribute('data-id');
+                if (rowId === cleanFid) {
+                    row.classList.add('highlight');
+                    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
             }
+            
+            console.warn(`Aucune ligne trouvée pour l'ID: ${fid}`);
         }
 
+        // Fonction pour gérer les événements de survol et clic
         function addHoverEvents(feature, layer) {
-            layer.bindPopup(createPopup(feature));
-            layer.on('mouseover', function(e) { this.openPopup(); });
-            layer.on('mouseout', function(e) { this.closePopup(); });
-            layer.on('click', function(e) { 
-                if (feature.properties.fid) highlightCSVRow(feature.properties.fid);
+            const popupContent = createPopup(feature);
+            layer.bindPopup(popupContent);
+            
+            layer.on('mouseover', function(e) {
+                this.openPopup();
+            });
+            
+            layer.on('mouseout', function(e) {
+                this.closePopup();
+            });
+            
+            layer.on('click', function(e) {
+                if (feature.properties.fid) {
+                    highlightCSVRow(feature.properties.fid);
+                }
             });
         }
 
-        // Chargement du CSV
+        // Chargement et traitement du CSV
         fetch('stmedard.csv')
             .then(response => response.text())
             .then(data => {
                 const lines = data.split('\n').filter(line => line.trim());
-                const headers = lines[0].split(';');
-                const tbody = document.querySelector('#csv-table tbody');
-                const thead = document.querySelector('#csv-table thead');
+                const headers = lines[0].split(';').map(header => header.trim());
                 
+                const thead = document.querySelector('#csv-table thead');
+                const tbody = document.querySelector('#csv-table tbody');
+                
+                // Création de l'en-tête du tableau
                 thead.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
                 
-                lines.slice(1).forEach(line => {
-                    const cells = line.split(';');
-                    const row = document.createElement('tr');
-                    row.setAttribute('data-id', cells[4]); // id passage piéton
-                    row.innerHTML = cells.map(cell => `<td>${cell}</td>`).join('');
-                    tbody.appendChild(row);
+                // Traitement des lignes de données
+                for (let i = 1; i < lines.length; i++) {
+                    const cells = lines[i].split(';').map(cell => cell.trim());
+                    if (cells.length === headers.length) {
+                        const row = document.createElement('tr');
+                        // Utilisation de l'ID (5ème colonne, index 4) comme identifiant
+                        row.setAttribute('data-id', cells[4]);
+                        row.innerHTML = cells.map(cell => `<td>${cell}</td>`).join('');
+                        tbody.appendChild(row);
+                        
+                        // Stockage des données pour une utilisation ultérieure
+                        csvData.push({
+                            id: cells[4],
+                            data: cells
+                        });
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement du CSV:', error);
+                document.querySelector('#csv-container').innerHTML = 
+                    '<p>Erreur lors du chargement des données tabulaires.</p>';
+            });
+
+        // Chargement des couches GeoJSON
+        function loadGeoJSON(url, layerName, style) {
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const layer = L.geoJSON(data, {
+                        style: style,
+                        onEachFeature: addHoverEvents
+                    }).addTo(map);
+                    
+                    overlayMaps[layerName] = layer;
+                    updateLayerControl();
+                })
+                .catch(error => {
+                    console.error(`Erreur lors du chargement de ${url}:`, error);
                 });
-            });
+        }
 
-        fetch('pp.geojson')
-            .then(response => response.json())
-            .then(data => {
-                const ppLayer = L.geoJSON(data, {
-                    style: { color: "#ff0000", weight: 12, opacity: 1, dashArray: '10, 10' },
-                    onEachFeature: addHoverEvents
-                }).addTo(map);
-                overlayMaps["Passages Piétons"] = ppLayer;
-                updateLayerControl();
-            });
+        // Chargement des différentes couches
+        loadGeoJSON('pp.geojson', "Passages Piétons", { 
+            color: "#ff0000", 
+            weight: 12, 
+            opacity: 1, 
+            dashArray: '10, 10' 
+        });
 
-        fetch('vegetation.geojson')
-            .then(response => response.json())
-            .then(data => {
-                const vegetationLayer = L.geoJSON(data, {
-                    style: { color: "#28a745", weight: 4, opacity: 0.8 },
-                    onEachFeature: addHoverEvents
-                }).addTo(map);
-                overlayMaps["Végétation"] = vegetationLayer;
-                updateLayerControl();
-            });
+        loadGeoJSON('vegetation.geojson', "Végétation", { 
+            color: "#28a745", 
+            weight: 4, 
+            opacity: 0.8 
+        });
 
-        fetch('stationnement.geojson')
-            .then(response => response.json())
-            .then(data => {
-                const stationnementLayer = L.geoJSON(data, {
-                    style: { color: "#007bff", weight: 4, opacity: 0.8 },
-                    onEachFeature: addHoverEvents
-                }).addTo(map);
-                overlayMaps["Stationnement"] = stationnementLayer;
-                updateLayerControl();
-            });
+        loadGeoJSON('stationnement.geojson', "Stationnement", { 
+            color: "#007bff", 
+            weight: 4, 
+            opacity: 0.8 
+        });
 
+        // Mise à jour du contrôle des couches
         let layerControl = null;
         function updateLayerControl() {
-            if (layerControl) map.removeControl(layerControl);
-            layerControl = L.control.layers(null, overlayMaps).addTo(map);
+            if (layerControl) {
+                map.removeControl(layerControl);
+            }
+            
+            layerControl = L.control.layers(null, overlayMaps, {
+                collapsed: false,
+                position: 'topright'
+            }).addTo(map);
         }
+
+        // Ajout d'une légende personnalisée
+        const legend = L.control({ position: 'bottomright' });
+        legend.onAdd = function(map) {
+            const div = L.DomUtil.create('div', 'layer-control');
+            div.innerHTML = `
+                <h4>Légende</h4>
+                <div><span style="display:inline-block; width:20px; height:10px; background:#ff0000; margin-right:5px;"></span> Passages piétons</div>
+                <div><span style="display:inline-block; width:20px; height:10px; background:#28a745; margin-right:5px;"></span> Végétation</div>
+                <div><span style="display:inline-block; width:20px; height:10px; background:#007bff; margin-right:5px;"></span> Stationnement</div>
+            `;
+            return div;
+        };
+        legend.addTo(map);
     </script>
 </body>
 </html>
