@@ -6,7 +6,7 @@
       "properties": {
         "fid": "p1",
         "Date": "",
-        "Notes": "Passage piétons",
+        "Notes": "Passage piéton",
         "Photo": "20250904_153700.jpg"
       },
       "geometry": {
@@ -22,7 +22,7 @@
       "properties": {
         "fid": "p2",
         "Date": "",
-        "Notes": "Passage piétons",
+        "Notes": "Passage piéton",
         "Photo": "20250904_151205.jpg"
       },
       "geometry": {
@@ -38,7 +38,7 @@
       "properties": {
         "fid": "p3",
         "Date": "",
-        "Notes": "Passage piétons",
+        "Notes": "Passage piéton",
         "Photo": "20250904_161430.jpg"
       },
       "geometry": {
@@ -53,8 +53,9 @@
       "type": "Feature",
       "properties": {
         "fid": "p4",
-        "Notes": "Passage piétons",
-        "Photo": "20250904_161943.jpg"
+        "Notes": "Passage piéton",
+        "Photo": "20250904_161943.jpg",
+        "Date": ""
       },
       "geometry": {
         "type": "LineString",
@@ -69,7 +70,7 @@
       "properties": {
         "Date": "",
         "fid": "p5",
-        "Notes": "Passage piétons",
+        "Notes": "Passage piéton",
         "Photo": "20250904_161906.jpg"
       },
       "geometry": {
@@ -85,7 +86,7 @@
       "properties": {
         "Photo": "20250904_162140.jpg",
         "Date": "",
-        "Notes": "Passage piétons",
+        "Notes": "Passage piéton",
         "fid": "p6"
       },
       "geometry": {
@@ -100,14 +101,198 @@
       "type": "Feature",
       "properties": {
         "fid": "p7",
-        "Notes": "Passage piétons",
-        "Photo": "20250904_163056.jpg"
+        "Notes": "Passage piéton",
+        "Photo": "20250904_163056.jpg",
+        "Date": ""
       },
       "geometry": {
         "type": "LineString",
         "coordinates": [
           [-0.7076882765940979, 44.87139586193649],
           [-0.707704647352756, 44.87138323641619]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "fid": "p8",
+        "Photo": "20250904_152933.jpg",
+        "Notes": "Passage piéton"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-0.6987984017756617, 44.87135429082045],
+          [-0.6987538648884879, 44.871355030577206]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "fid": "p9",
+        "Photo": "20250911_143700.jpg",
+        "Notes": "Passage piéton ne nécessitant peut-être pas d'abaissage du trottoir"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-0.7052113383711003, 44.87510545807865],
+          [-0.705165849836277, 44.87506935454303]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "fid": "p10",
+        "Notes": "Passage piéton",
+        "Photo": "20250911_144102.jpg"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-0.7063066118951724, 44.87544280681257],
+          [-0.7062666355257932, 44.87549074808658]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "fid": "p11",
+        "Notes": "Passage piéton",
+        "Photo": "20250911_144203.jpg"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-0.7063215727349075, 44.87555879971674],
+          [-0.7063831289585494, 44.87558202661526]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "fid": "p12",
+        "Notes": "Passage piéton potentiellement non nécessaire",
+        "Photo": "20250911_144343.jpg"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-0.706003038893698, 44.876012558311714],
+          [-0.7059644441658293, 44.87604363737924]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "fid": "p13",
+        "Date": "",
+        "Notes": "Passage piéton",
+        "Photo": "20250911_154130.jpg"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-0.7060453160586633, 44.87204568481957],
+          [-0.7060999305887492, 44.8720572961538]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "fid": "p14",
+        "Date": "",
+        "Notes": "Passage piéton",
+        "Photo": "20250911_154305.jpg"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-0.7066293007573563, 44.87161478916684],
+          [-0.706628535490438, 44.87158459913093]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Photo": "20250911_154459.jpg",
+        "Notes": "Passage piéton",
+        "fid": "p15"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-0.7066455442720212, 44.87099801680526],
+          [-0.7066466946620267, 44.87096377510903]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "fid": "p16",
+        "Date": "",
+        "Notes": "Passage piéton",
+        "Photo": "20250911_154806.jpg"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-0.7066501376481824, 44.8700870265119],
+          [-0.7066511155676665, 44.87004890820782]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Photo": "20250911_155101.jpg",
+        "Notes": "Passage piéton",
+        "fid": "p17"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-0.7081343095635759, 44.869797684774056],
+          [-0.70819842851256, 44.86979827492783]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Photo": "20250911_155707.jpg",
+        "Notes": "Passage piéton",
+        "fid": "p18"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-0.7085493101468217, 44.868680065232496],
+          [-0.7085706887335164, 44.86863991360798]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Notes": "Passage piéton ne nécessitant peut-être pas d'abaissage du trottoir",
+        "Photo": "20250911_160814.jpg",
+        "fid": "p19"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-0.7055262312048285, 44.86785494685941],
+          [-0.7055352836600832, 44.86782892722471]
         ]
       }
     }
