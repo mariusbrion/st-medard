@@ -1,0 +1,85 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "fid": "v12",
+        "Notes": "carré végétalisé à entretenir",
+        "Photo": "20250911_144600.jpg"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            -0.7069515403217963,
+            44.876247830602466
+          ],
+          [
+            -0.7069189118214467,
+            44.876223328590015
+          ],
+          [
+            -0.7069651761138118,
+            44.87623644234441
+          ],
+          [
+            -0.7069522087334121,
+            44.87624803487154
+          ]
+        ],
+        "type": "LineString"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "fid": "v14",
+        "Notes": "arbre envahissant",
+        "Photo": "20250904_150416.jpg"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            -0.7020675505185636,
+            44.87362156589279
+          ],
+          [
+            -0.7020421732648856,
+            44.873597474161954
+          ],
+          [
+            -0.7020627623578832,
+            44.8735662566929
+          ],
+          [
+            -0.7020167960123445,
+            44.873524180947214
+          ]
+        ],
+        "type": "LineString"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Notes": "tonte nécessaire bande plantéee de la commune",
+        "Photo": "20250911_152145.jpg",
+        "Date": "",
+        "fid": "v29"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            -0.7108702042072537,
+            44.87240430195058
+          ],
+          [
+            -0.7097480004503041,
+            44.872876442980896
+          ]
+        ],
+        "type": "LineString"
+      }
+    }
+  ]
+}
