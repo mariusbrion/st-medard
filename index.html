@@ -83,6 +83,19 @@
             maxZoom: 20
         }).addTo(map);
 
+        // --- GESTION DE L'ORDRE DES COUCHES AVEC DES PANES ---
+        // On crée des "panes" (volets). Un zIndex plus élevé s'affiche au-dessus.
+        map.createPane('stationnementPane');
+        map.getPane('stationnementPane').style.zIndex = 401;
+        map.createPane('vegetationMairiePane');
+        map.getPane('vegetationMairiePane').style.zIndex = 402;
+        map.createPane('vegetationPane');
+        map.getPane('vegetationPane').style.zIndex = 403;
+        map.createPane('amenagementPane');
+        map.getPane('amenagementPane').style.zIndex = 404;
+        map.createPane('ppPane');
+        map.getPane('ppPane').style.zIndex = 405; // Le plus élevé, donc au-dessus de tout
+
         // Stockage des couches
         const overlayMaps = {};
         let csvData = [];
@@ -117,27 +130,21 @@
             console.warn(`Aucune ligne trouvée pour l'ID: ${fid}`);
         }
 
-        // --- MODIFICATION ICI ---
-        // Fonction pour gérer les événements de survol et clic (MODIFIÉE)
+        // Fonction pour gérer les événements de survol et clic
         function addHoverEvents(feature, layer) {
-            // 1. Lier la popup complète (avec image) qui s'ouvrira au CLIC.
             const popupContent = createPopup(feature);
             layer.bindPopup(popupContent);
             
-            // 2. Lier une infobulle simple (tooltip) pour le SURVOL.
-            // C'est léger et ça ne crée pas le bug de scintillement.
             const tooltipContent = `<b>${feature.properties.Notes || 'Information'}</b><br><i>Cliquez pour voir les détails</i>`;
             layer.bindTooltip(tooltipContent, {
-                sticky: true, // Fait en sorte que l'infobulle suive le curseur
+                sticky: true,
                 opacity: 0.9
             });
             
-            // 3. Garder l'événement de clic pour surligner la ligne dans le tableau CSV.
             layer.on('click', function(e) {
                 if (feature.properties.fid) {
                     highlightCSVRow(feature.properties.fid);
                 }
-                // La popup s'ouvre automatiquement au clic grâce à `bindPopup`.
             });
         }
 
@@ -175,14 +182,14 @@
             });
 
         // Chargement des couches GeoJSON
-        function loadGeoJSON(url, layerName, style) {
+        function loadGeoJSON(url, layerName, options) {
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    const layer = L.geoJSON(data, {
-                        style: style,
-                        onEachFeature: addHoverEvents
-                    }).addTo(map);
+                    // On ajoute onEachFeature aux options passées à la fonction
+                    options.onEachFeature = addHoverEvents;
+                    
+                    const layer = L.geoJSON(data, options).addTo(map);
                     
                     overlayMaps[layerName] = layer;
                     updateLayerControl();
@@ -192,24 +199,40 @@
                 });
         }
 
-        loadGeoJSON('pp.geojson', "Passages Piétons", { 
-            color: "#007bff", 
-            weight: 12, 
-            opacity: 1, 
-            dashArray: '10, 10' 
-        });
+        // --- APPEL DES COUCHES DANS L'ORDRE SOUHAITÉ ---
+        // L'ordre d'appel n'a plus d'importance pour l'affichage grâce aux panes, 
+        // mais c'est plus propre de les lister ici.
 
-        loadGeoJSON('vegetation.geojson', "Végétation", { 
-            color: "#28a745", 
-            weight: 4, 
-            opacity: 0.8 
-        });
-
+        // 5. Stationnement (en dessous de tout)
         loadGeoJSON('stationnement.geojson', "Stationnement", { 
-            color: "#ff0000", 
-            weight: 4, 
-            opacity: 0.8 
+            pane: 'stationnementPane',
+            style: { color: "#ff0000", weight: 4, opacity: 0.8 }
         });
+
+        // 4. Végétation Mairie (nouvelle couche)
+        loadGeoJSON('vegetationmairie.geojson', "Végétation Mairie", { 
+            pane: 'vegetationMairiePane',
+            style: { color: "#90EE90", weight: 4, opacity: 0.8 } // Vert clair
+        });
+        
+        // 3. Végétation
+        loadGeoJSON('vegetation.geojson', "Végétation", { 
+            pane: 'vegetationPane',
+            style: { color: "#28a745", weight: 4, opacity: 0.8 }
+        });
+
+        // 2. Aménagement (nouvelle couche)
+        loadGeoJSON('amenagement.geojson', "Aménagement", {
+            pane: 'amenagementPane',
+            style: { color: "#800080", weight: 4, opacity: 0.8 } // Violet
+        });
+
+        // 1. Passages Piétons (au-dessus de tout)
+        loadGeoJSON('pp.geojson', "Passages Piétons", { 
+            pane: 'ppPane',
+            style: { color: "#007bff", weight: 12, opacity: 1, dashArray: '10, 10' }
+        });
+
 
         // Mise à jour du contrôle des couches
         let layerControl = null;
@@ -224,16 +247,19 @@
             }).addTo(map);
         }
 
-        // Ajout d'une légende personnalisée
+        // Ajout d'une légende personnalisée (MISE À JOUR)
         const legend = L.control({ position: 'bottomright' });
         legend.onAdd = function(map) {
             const div = L.DomUtil.create('div', 'layer-control');
             div.innerHTML = `
                 <h4>Légende</h4>
-                <div><span style="display:inline-block; width:20px; height:10px; background:#ff0000; margin-right:5px;"></span> Passages piétons</div>
+                <div><span style="display:inline-block; width:20px; height:10px; border-bottom: 3px dashed #007bff; margin-right:5px;"></span> Passages piétons</div>
+                <div><span style="display:inline-block; width:20px; height:10px; background:#800080; margin-right:5px;"></span> Aménagement</div>
                 <div><span style="display:inline-block; width:20px; height:10px; background:#28a745; margin-right:5px;"></span> Végétation</div>
-                <div><span style="display:inline-block; width:20px; height:10px; background:#007bff; margin-right:5px;"></span> Stationnement</div>
+                <div><span style="display:inline-block; width:20px; height:10px; background:#90EE90; margin-right:5px;"></span> Végétation Mairie</div>
+                <div><span style="display:inline-block; width:20px; height:10px; background:#ff0000; margin-right:5px;"></span> Stationnement</div>
             `;
+            // J'ai aussi corrigé les couleurs pour qu'elles correspondent à la symbologie.
             return div;
         };
         legend.addTo(map);
