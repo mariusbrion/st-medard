@@ -101,14 +101,10 @@
 
         // Fonction pour surligner une ligne du CSV
         function highlightCSVRow(fid) {
-            // Nettoyer l'ID pour correspondre au format du CSV
             const cleanFid = fid.toString().trim();
-            
             document.querySelectorAll('#csv-table tr').forEach(row => {
                 row.classList.remove('highlight');
             });
-            
-            // Trouver la ligne correspondante
             const rows = document.querySelectorAll('#csv-table tbody tr');
             for (let row of rows) {
                 const rowId = row.getAttribute('data-id');
@@ -118,27 +114,30 @@
                     return;
                 }
             }
-            
             console.warn(`Aucune ligne trouvée pour l'ID: ${fid}`);
         }
 
-        // Fonction pour gérer les événements de survol et clic
+        // --- MODIFICATION ICI ---
+        // Fonction pour gérer les événements de survol et clic (MODIFIÉE)
         function addHoverEvents(feature, layer) {
+            // 1. Lier la popup complète (avec image) qui s'ouvrira au CLIC.
             const popupContent = createPopup(feature);
             layer.bindPopup(popupContent);
             
-            layer.on('mouseover', function(e) {
-                this.openPopup();
+            // 2. Lier une infobulle simple (tooltip) pour le SURVOL.
+            // C'est léger et ça ne crée pas le bug de scintillement.
+            const tooltipContent = `<b>${feature.properties.Notes || 'Information'}</b><br><i>Cliquez pour voir les détails</i>`;
+            layer.bindTooltip(tooltipContent, {
+                sticky: true, // Fait en sorte que l'infobulle suive le curseur
+                opacity: 0.9
             });
             
-            layer.on('mouseout', function(e) {
-                this.closePopup();
-            });
-            
+            // 3. Garder l'événement de clic pour surligner la ligne dans le tableau CSV.
             layer.on('click', function(e) {
                 if (feature.properties.fid) {
                     highlightCSVRow(feature.properties.fid);
                 }
+                // La popup s'ouvre automatiquement au clic grâce à `bindPopup`.
             });
         }
 
@@ -152,20 +151,16 @@
                 const thead = document.querySelector('#csv-table thead');
                 const tbody = document.querySelector('#csv-table tbody');
                 
-                // Création de l'en-tête du tableau
                 thead.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
                 
-                // Traitement des lignes de données
                 for (let i = 1; i < lines.length; i++) {
                     const cells = lines[i].split(';').map(cell => cell.trim());
                     if (cells.length === headers.length) {
                         const row = document.createElement('tr');
-                        // Utilisation de l'ID (5ème colonne, index 4) comme identifiant
                         row.setAttribute('data-id', cells[4]);
                         row.innerHTML = cells.map(cell => `<td>${cell}</td>`).join('');
                         tbody.appendChild(row);
                         
-                        // Stockage des données pour une utilisation ultérieure
                         csvData.push({
                             id: cells[4],
                             data: cells
@@ -197,7 +192,6 @@
                 });
         }
 
-        // Chargement des différentes couches
         loadGeoJSON('pp.geojson', "Passages Piétons", { 
             color: "#ff0000", 
             weight: 12, 
@@ -246,3 +240,4 @@
     </script>
 </body>
 </html>
+
