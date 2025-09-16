@@ -4,24 +4,6 @@
     {
       "type": "Feature",
       "properties": {
-        "fid": "a6",
-        "Date": null,
-        "Notes": "Eclairage",
-        "Photo": "20250911_155458.jpg"
-      },
-      "geometry": {
-        "coordinates": [
-          -0.708259311493064,
-          44.86888315477623,
-          0
-        ],
-        "type": "Point"
-      },
-      "id": 1
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "fid": "a15",
         "Date": "",
         "Notes": "absence de trottoir",
@@ -3553,6 +3535,37 @@
             [
               -0.7112089090061033,
               44.8726479581334
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Photo": "20250911_155458.jpg",
+        "fid": "a6",
+        "Notes": "éclairage"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              -0.7082658043651406,
+              44.86888405185206
+            ],
+            [
+              -0.7082582028010904,
+              44.86887887165625
+            ],
+            [
+              -0.7082511859738929,
+              44.868886538346175
+            ],
+            [
+              -0.7082658043651406,
+              44.86888405185206
             ]
           ]
         ],
