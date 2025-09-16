@@ -84,7 +84,6 @@
         }).addTo(map);
 
         // --- GESTION DE L'ORDRE DES COUCHES AVEC DES PANES ---
-        // On crée des "panes" (volets). Un zIndex plus élevé s'affiche au-dessus.
         map.createPane('stationnementPane');
         map.getPane('stationnementPane').style.zIndex = 401;
         map.createPane('vegetationMairiePane');
@@ -94,13 +93,12 @@
         map.createPane('amenagementPane');
         map.getPane('amenagementPane').style.zIndex = 404;
         map.createPane('ppPane');
-        map.getPane('ppPane').style.zIndex = 405; // Le plus élevé, donc au-dessus de tout
+        map.getPane('ppPane').style.zIndex = 405;
 
         // Stockage des couches
         const overlayMaps = {};
         let csvData = [];
 
-        // Fonction pour créer le contenu des popups
         function createPopup(feature) {
             let content = `<b>${feature.properties.Notes || 'Information'}</b>`;
             if (feature.properties.Date) {
@@ -112,7 +110,6 @@
             return content;
         }
 
-        // Fonction pour surligner une ligne du CSV
         function highlightCSVRow(fid) {
             const cleanFid = fid.toString().trim();
             document.querySelectorAll('#csv-table tr').forEach(row => {
@@ -130,7 +127,6 @@
             console.warn(`Aucune ligne trouvée pour l'ID: ${fid}`);
         }
 
-        // Fonction pour gérer les événements de survol et clic
         function addHoverEvents(feature, layer) {
             const popupContent = createPopup(feature);
             layer.bindPopup(popupContent);
@@ -148,7 +144,7 @@
             });
         }
 
-        // Chargement et traitement du CSV
+        // --- MODIFICATION ICI : Chargement et traitement du CSV avec débogage ---
         fetch('stmedard.csv')
             .then(response => response.text())
             .then(data => {
@@ -162,15 +158,25 @@
                 
                 for (let i = 1; i < lines.length; i++) {
                     const cells = lines[i].split(';').map(cell => cell.trim());
+                    
+                    // Vérification de la conformité de la ligne
                     if (cells.length === headers.length) {
                         const row = document.createElement('tr');
-                        row.setAttribute('data-id', cells[4]);
+                        // L'ID se trouve dans la 5ème colonne (index 4)
+                        row.setAttribute('data-id', cells[4]); 
                         row.innerHTML = cells.map(cell => `<td>${cell}</td>`).join('');
                         tbody.appendChild(row);
                         
                         csvData.push({
                             id: cells[4],
                             data: cells
+                        });
+                    } else {
+                        // **NOUVEAU** : Avertissement dans la console si une ligne est ignorée
+                        console.warn(`Ligne ${i + 1} ignorée : format incorrect.`, {
+                            expectedColumns: headers.length,
+                            foundColumns: cells.length,
+                            lineContent: lines[i]
                         });
                     }
                 }
@@ -186,11 +192,8 @@
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    // On ajoute onEachFeature aux options passées à la fonction
                     options.onEachFeature = addHoverEvents;
-                    
                     const layer = L.geoJSON(data, options).addTo(map);
-                    
                     overlayMaps[layerName] = layer;
                     updateLayerControl();
                 })
@@ -199,40 +202,27 @@
                 });
         }
 
-        // --- APPEL DES COUCHES DANS L'ORDRE SOUHAITÉ ---
-        // L'ordre d'appel n'a plus d'importance pour l'affichage grâce aux panes, 
-        // mais c'est plus propre de les lister ici.
-
-        // 5. Stationnement (en dessous de tout)
+        // --- APPEL DES COUCHES ---
         loadGeoJSON('stationnement.geojson', "Stationnement", { 
             pane: 'stationnementPane',
             style: { color: "#ff0000", weight: 4, opacity: 0.8 }
         });
-
-        // 4. Végétation Mairie (nouvelle couche)
         loadGeoJSON('vegetationmairie.geojson', "Végétation Mairie", { 
             pane: 'vegetationMairiePane',
-            style: { color: "#90EE90", weight: 4, opacity: 0.8 } // Vert clair
+            style: { color: "#90EE90", weight: 4, opacity: 0.8 }
         });
-        
-        // 3. Végétation
         loadGeoJSON('vegetation.geojson', "Végétation", { 
             pane: 'vegetationPane',
             style: { color: "#28a745", weight: 4, opacity: 0.8 }
         });
-
-        // 2. Aménagement (nouvelle couche)
         loadGeoJSON('amenagement.geojson', "Aménagement", {
             pane: 'amenagementPane',
-            style: { color: "#800080", weight: 4, opacity: 0.8 } // Violet
+            style: { color: "#800080", weight: 4, opacity: 0.8 }
         });
-
-        // 1. Passages Piétons (au-dessus de tout)
         loadGeoJSON('pp.geojson', "Passages Piétons", { 
             pane: 'ppPane',
             style: { color: "#007bff", weight: 12, opacity: 1, dashArray: '10, 10' }
         });
-
 
         // Mise à jour du contrôle des couches
         let layerControl = null;
@@ -240,14 +230,12 @@
             if (layerControl) {
                 map.removeControl(layerControl);
             }
-            
-            layerControl = L.control.layers(null, overlayMaps, {
-                collapsed: false,
-                position: 'topright'
-            }).addTo(map);
+            if (Object.keys(overlayMaps).length > 0) {
+                 layerControl = L.control.layers(null, overlayMaps, { collapsed: false, position: 'topright' }).addTo(map);
+            }
         }
 
-        // Ajout d'une légende personnalisée (MISE À JOUR)
+        // Ajout d'une légende personnalisée
         const legend = L.control({ position: 'bottomright' });
         legend.onAdd = function(map) {
             const div = L.DomUtil.create('div', 'layer-control');
@@ -259,7 +247,6 @@
                 <div><span style="display:inline-block; width:20px; height:10px; background:#90EE90; margin-right:5px;"></span> Végétation Mairie</div>
                 <div><span style="display:inline-block; width:20px; height:10px; background:#ff0000; margin-right:5px;"></span> Stationnement</div>
             `;
-            // J'ai aussi corrigé les couleurs pour qu'elles correspondent à la symbologie.
             return div;
         };
         legend.addTo(map);
