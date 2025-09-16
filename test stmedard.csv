@@ -1,0 +1,85 @@
+objet;service concerné;coût estimé;où;id
+passage piéton;ST;6000;16-26 rue Paul Langevin;p1
+passage piéton;ST;6000;22-31 rue Charles Nicolle;p2
+passage piéton;ST;6000;13-3 rue Jean Goujon;p3
+passage piéton;ST;6000;21-35 rue Jean Goujon;p4
+passage piéton;ST;6000;35-59 rue Jean Goujon;p5
+passage piéton;ST;6000;65-83 rue Jean Goujon;p6
+passage piéton;ST;6000;89-101 rue Jean Goujon;p7
+passage piéton;ST;6000;16-17 rue  Louis Braille;p8
+passage piéton  ne nécessitant peut-être pas d'abaissage du trottoir;ST;?;22-14 rue Albert Calmette;p9
+passage piéton;ST;6000;1-2 rue Camille Guérin;p10
+passage piéton;ST;6000;16-19 rue Barthélémy Giraudeau;p11
+Passage piéton potentiellement non nécessaire;ST;?;56-57 rue du Docteur Jacques Monod;p12
+passage piéton;ST;6000;16-7 rue Jean-Baptiste Carpeaux;p13
+passage piéton;ST;6000;11-28 rue Jean-Baptiste Carpeaux;p14
+passage piéton;ST;6000;1-13 rue Raoul Larche;p15
+passage piéton;ST;6000;15-10 rue Raoul Larche;p16
+passage piéton;ST;6000;2-9 rue  Fançois Rude;p17
+passage piéton;ST;6000;7-15  allée du Baradot;p18
+passage piéton ne nécessitant peut-être pas d'abaissage du trottoir;ST;?;25-23 allée Léo Drouyn;p19
+traversée potentielle;ST;?;34-36 rue du Docteur Jacques Monod;p20
+stationnement sauvage;mairie;;aux abords de l'école maternelle de Corbiac;s1
+stationnement sauvage;mairie;;2-62 rue Joséphine Baker;s2
+stationnement sauvage;mairie;;2-12 rue Albert Calmette;s3
+stationnement sauvage;mairie;;142-180 route de Corbiac;s4
+stationnement sauvage;mairie;;2 rue Jean Goujon jusqu'à l'avenue du Haillan;s5
+stationnement sauvage;mairie;;35-87 rue Jean Goujon;s6
+stationnement sauvage;mairie;;17-29 rue Camille Julian;s7
+tonte nécessaire;riverain;/;11 rue Louis Braille;v1
+haie à entretenir;riverain;/;22 rue Louis Braille;v2
+tonte nécessaire;riverain;/;18 rue Louis Braille;v3
+tonte nécessaire;riverain;/;17 rue Louis Braille - 4 rue Paul Langevin;v4
+tonte nécessaire;riverain;/;10-12-14 rue Paul Langevin;v5
+tonte nécessaire;riverain;/;26 rue Paul Langevin;v6
+haie à entretenir;riverain;/;1 rue Charles Nicole (côté avenue du Haillan) ;v7
+entretien derrière l'arrêt de bus;riverain;/;3 rue Charles Nicole (côté avenue du Haillan) ;v8
+tonte nécessaire;riverain;/;2 rue Fleming (côté route de Feydit) ;v9
+tonte nécessaire;riverain;/;17 rue Barthélémy Giraudeau;v10
+haie à entretenir;riverain;/;46 rue du Docteur Jacques Monod;v11
+carré végétalisé à entretenir;mairie;/;44 rue du Docteur Jacques Monod;v12
+tonte importante nécessaire;riverain;/;30 rue du Docteur Jacques Monod;v13
+arbre envahissant;mairie;/;aux abords de l'école maternelle de Corbiac;v14
+tonte nécessaire;riverain;/;13-15 rue Jean Goujon;v15
+tonte nécessaire;riverain;/;9 rue Jean Goujon;v16
+haie à entretenir;riverain;/;11 rue Jean Goujon;v17
+tonte nécessaire;riverain;/;1 rue Raoul Larche;v18
+tonte nécessaire;riverain;/;13 rue Raoul Larche;v19
+tonte nécessaire;riverain;/;15 rue Raoul Larche;v20
+tonte nécessaire;riverain;/;Incertain, 23 rue Raoul Larche côté rue Jacque Gabriel;v21
+haie à entretenir;riverain;/;2-4 rue Jacque Gabriel;v22
+tonte nécessaire;riverain;/;11 rue François Rude;v23
+tonte nécessaire;riverain;/;15-17 rue François Rude;v24
+tonte nécessaire;riverain;/;59-65 rue Jean Goujon;v25
+tonte nécessaire;riverain;/;83 rue Jean Goujon;v26
+tonte nécessaire;riverain;/;101 rue Jean Goujon;v27
+tonte nécessaire;riverain;/;25 rue Camille Julian;v28
+tonte nécessaire bande plantée;mairie;/;avenue du Haillan;v29
+souche;ST;;13 rue François Rude;a1
+souche;ST;;15 rue François Rude;a2
+souche;ST;;15 rue François Rude;a3
+souche sur des branchements d'eau rendant complexe toute intervention;ST;;17 rue François Rude;a4
+souche;ST;;17 rue François Rude;a5
+éclairage;ST;;croisement chemin de Veillance/ rue François Rude;a6
+pierre;ST;;15 chemin du Petit Bois;a7
+s'assurer de la remise en état du trottoir;mairie;;13-15 rue Raoul Larche;a8
+la piste présente des déformations;ST;;107-109 avenue du Haillan;a9
+élargissement de trottoir ou revêtement plus adapté;ST;;en face du 13 rue Jean Goujon;a10
+souche;ST;;19 rue Jean Goujon;a11
+double panneaux céder le passage dont un gênant l'utilisation du trottoir;signalétique;;89 rue Jean Goujon;a12
+devers de trottoir;ST;;89 rue Jean Goujon;a13
+trottoir à aménager;ST;;1 rue Camille Guérin;a14
+absence de trottoir;ST;;16 rue Barthélémy Giraudeau-1 rue Camille Guérin;a15
+trottoir étroit déplacement potentiel du panneau;ST;;31 rue Charles Nicolle;a16
+effondrement;ST;;24 rue Louis Braille;a17
+débordement caniveau;ST;;10-12 rue Paul Langevin;a18
+zone de rencontre potentielle;mairie;;rue Joséphine Baker;a19
+mise à niveau de regard;régie de l'eau;;168 route de Corbiac;a20
+mise à niveau de regard;régie de l'eau;;172 route de Corbiac;a21
+mise à niveau de regard;régie de l'eau;;162 route de Corbiac;a22
+trottoir à aménager;ST;;180 route de Corbiac;a23
+absence de trottoir (piste cyclable);ST;;68 avenue du Hailan;a24
+point de rassemblement évitant des aménagements supplémentaires;mairie;/;30 rue du Docteur Jacques Monod;r1
+point de rassemblement potentiel avec un itinéraire alternatif par la rue Gabriel Durand conseillé du fait des risques de conflit avec les nombreux cyclistes;mairie;/;croisement route de Corbiac/rue Gabriel Durand;r2
+point de rassemblement évitant des aménagements supplémentaires;mairie;/;29 chemin de Veillance;r3
+point de rassemblement alternatif conseillé du fait des risques de conflit avec les nombreux cyclistes;mairie;/;croisement avenue de Mazeau/rue Jean Goujon;r4
