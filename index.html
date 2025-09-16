@@ -94,6 +94,8 @@
         map.getPane('amenagementPane').style.zIndex = 404;
         map.createPane('ppPane');
         map.getPane('ppPane').style.zIndex = 405;
+        map.createPane('rassemblementPane'); // Nouvelle couche
+        map.getPane('rassemblementPane').style.zIndex = 406; // Au-dessus de tout
 
         // Stockage des couches
         const overlayMaps = {};
@@ -144,7 +146,7 @@
             });
         }
 
-        // --- MODIFICATION ICI : Chargement et traitement du CSV avec débogage ---
+        // Chargement et traitement du CSV
         fetch('stmedard.csv')
             .then(response => response.text())
             .then(data => {
@@ -159,10 +161,8 @@
                 for (let i = 1; i < lines.length; i++) {
                     const cells = lines[i].split(';').map(cell => cell.trim());
                     
-                    // Vérification de la conformité de la ligne
                     if (cells.length === headers.length) {
                         const row = document.createElement('tr');
-                        // L'ID se trouve dans la 5ème colonne (index 4)
                         row.setAttribute('data-id', cells[4]); 
                         row.innerHTML = cells.map(cell => `<td>${cell}</td>`).join('');
                         tbody.appendChild(row);
@@ -172,7 +172,6 @@
                             data: cells
                         });
                     } else {
-                        // **NOUVEAU** : Avertissement dans la console si une ligne est ignorée
                         console.warn(`Ligne ${i + 1} ignorée : format incorrect.`, {
                             expectedColumns: headers.length,
                             foundColumns: cells.length,
@@ -221,7 +220,21 @@
         });
         loadGeoJSON('pp.geojson', "Passages Piétons", { 
             pane: 'ppPane',
-            style: { color: "#007bff", weight: 12, opacity: 1, dashArray: '10, 10' }
+            style: { color: "#007bff", weight: 8, opacity: 1, dashArray: '10, 10' } // Largeur réduite à 8
+        });
+        // Nouvelle couche : Points de rassemblement
+        loadGeoJSON('rassemblement.geojson', "Points de rassemblement", {
+            pane: 'rassemblementPane',
+            pointToLayer: function (feature, latlng) {
+                return L.circleMarker(latlng, {
+                    radius: 8,
+                    fillColor: "#ff7800", // Orange
+                    color: "#000",
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                });
+            }
         });
 
         // Mise à jour du contrôle des couches
@@ -241,6 +254,7 @@
             const div = L.DomUtil.create('div', 'layer-control');
             div.innerHTML = `
                 <h4>Légende</h4>
+                <div><span style="display:inline-block; vertical-align: middle; width:12px; height:12px; border-radius:50%; background:#ff7800; border: 1px solid #000; margin-right:5px;"></span> Points de rassemblement</div>
                 <div><span style="display:inline-block; width:20px; height:10px; border-bottom: 3px dashed #007bff; margin-right:5px;"></span> Passages piétons</div>
                 <div><span style="display:inline-block; width:20px; height:10px; background:#800080; margin-right:5px;"></span> Aménagement</div>
                 <div><span style="display:inline-block; width:20px; height:10px; background:#28a745; margin-right:5px;"></span> Végétation</div>
