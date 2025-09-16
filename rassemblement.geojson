@@ -1,0 +1,76 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "fid": "r1",
+        "Date": null,
+        "Notes": "point de rassemblement évitant des aménagements supplémentaires",
+        "Photo": "20250911_150103.jpg"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.707359373185217,
+          44.87752793290161,
+          0
+        ]
+      },
+      "id": 0
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "fid": "r2",
+        "Date": null,
+        "Notes": "point de rassemblement potentiel avec un itinéraire alternatif par la rue Gabriel Durand conseillé du fait des risques de conflit avec les nombreux cyclistes",
+        "Photo": "20250911_151506.jpg"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.710159230349821,
+          44.8746034116161,
+          0
+        ]
+      },
+      "id": 1
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "fid": "r3",
+        "Date": "",
+        "Notes": "point de rassemblement évitant des aménagements supplémentaires",
+        "Photo": "20250911_160615.jpg"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.7060246090813,
+          44.86720475860361,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "fid": "r4",
+        "Date": null,
+        "Notes": "point de rassemblement alternatif conseillé du fait des risques de conflit avec les nombreux cyclistes",
+        "Photo": "20250904_163539.jpg"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.710596035824684,
+          44.870820056026226,
+          0
+        ]
+      },
+      "id": 3
+    }
+  ]
+}
