@@ -6,7 +6,7 @@
       "properties": {
         "Ligne": 3,
         "Long": 1495.462,
-        "note": "chemin raccourci - trop dangereux dans l'état"
+        "Notes": "chemin raccourci - trop dangereux dans l'état"
       },
       "geometry": {
         "coordinates": [
@@ -273,7 +273,7 @@
       "properties": {
         "Ligne": 7,
         "Long": 1044.45,
-        "note": "chemin inchangé - praticable avec peu d’aménagements"
+        "Notes": "chemin inchangé - praticable avec peu d’aménagements"
       },
       "geometry": {
         "coordinates": [
@@ -444,7 +444,7 @@
       "properties": {
         "Ligne": 4,
         "Long": 1294.356,
-        "note": "chemin alternatif, praticable avec peu d’aménagements"
+        "Notes": "chemin alternatif, praticable avec peu d’aménagements"
       },
       "geometry": {
         "coordinates": [
@@ -619,7 +619,7 @@
       "properties": {
         "Ligne": 1,
         "Long": 1203.206,
-        "note": "chemin raccourci - trop dangereux dans l'état"
+        "Notes": "chemin raccourci - trop dangereux dans l'état"
       },
       "geometry": {
         "coordinates": [
@@ -774,7 +774,7 @@
       "properties": {
         "Ligne": 2,
         "Long": 1372.169,
-        "note": "chemin inchangé - trop dangereux dans l'état"
+        "Notes": "chemin inchangé - trop dangereux dans l'état"
       },
       "geometry": {
         "coordinates": [
@@ -1105,7 +1105,7 @@
       "properties": {
         "Ligne": 8,
         "Long": 1134.588,
-        "note": "chemin alternatif, praticable avec peu d’aménagements"
+        "Notes": "chemin alternatif, praticable avec peu d’aménagements"
       },
       "geometry": {
         "coordinates": [
@@ -1276,7 +1276,7 @@
       "properties": {
         "Ligne": 5,
         "Long": 1018.081,
-        "note": "chemin raccourci - trop dangereux dans l'état"
+        "Notes": "chemin raccourci - trop dangereux dans l'état"
       },
       "geometry": {
         "coordinates": [
@@ -1535,7 +1535,7 @@
       "properties": {
         "Ligne": 6,
         "Long": 876.584,
-        "note": "chemin inchangé- praticable avec peu d’aménagements"
+        "Notes": "chemin inchangé- praticable avec peu d’aménagements"
       },
       "geometry": {
         "coordinates": [
